@@ -260,7 +260,7 @@ tailwind.config = {
           <p class="font-medium text-sm">Lisinopril 10mg</p>
           <p class="text-xs text-on-surface-variant">8:00 AM · 1 tablet</p>
         </div>
-        <button onclick="this.innerHTML='<span class=\'material-symbols-outlined text-secondary\' style=\'font-variation-settings:\"FILL\" 1\'>check_circle</span>';this.disabled=true" class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center hover:border-secondary transition-colors">
+        <button onclick="markMedTaken(this)" class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center hover:border-secondary transition-colors">
           <span class="material-symbols-outlined text-slate-300 text-sm">check</span>
         </button>
       </div>
@@ -273,7 +273,7 @@ tailwind.config = {
           <p class="text-xs text-on-surface-variant">1:00 PM · With food</p>
         </div>
         <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
         </div>
       </div>
       <div class="px-5 py-4 flex items-center gap-4">
@@ -284,7 +284,7 @@ tailwind.config = {
           <p class="font-medium text-sm">Atorvastatin 20mg</p>
           <p class="text-xs text-on-surface-variant">9:00 PM · Before bed</p>
         </div>
-        <button onclick="this.innerHTML='<span class=\'material-symbols-outlined text-secondary\' style=\'font-variation-settings:\"FILL\" 1\'>check_circle</span>';this.disabled=true" class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center hover:border-secondary transition-colors">
+        <button onclick="markMedTaken(this)" class="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center hover:border-secondary transition-colors">
           <span class="material-symbols-outlined text-slate-300 text-sm">check</span>
         </button>
       </div>
@@ -338,6 +338,13 @@ tailwind.config = {
 <script src="js/i18n/languageContext.js"></script>
 <script src="js/api.js"></script>
 <script>
+function markMedTaken(btn) {
+  btn.innerHTML = '<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:\'FILL\' 1">check_circle</span>';
+  btn.disabled = true;
+  btn.classList.remove('border-slate-200');
+  btn.classList.add('border-secondary', 'bg-green-50');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const session = await requireAuth();
   if (!session) return;
