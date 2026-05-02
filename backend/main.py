@@ -7,6 +7,7 @@ from backend.routes import (
     ai_assistant,
     appointments,
     emergency,
+    integrations,
     prescriptions,
     specialists,
     users,
@@ -19,6 +20,7 @@ def create_app() -> FastAPI:
         from dotenv import load_dotenv  # type: ignore
 
         load_dotenv()
+        load_dotenv(".env.local", override=True)
     except Exception:
         # python-dotenv is optional; environment variables can still be set externally.
         pass
@@ -32,8 +34,12 @@ def create_app() -> FastAPI:
     allowed_origins = [
         "http://localhost:3000",
         "http://localhost:5173",
+        "http://localhost:5500",
+        "http://localhost:8080",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:5500",
+        "http://127.0.0.1:8080",
     ]
     # Allow overriding via env without changing code.
     extra_origins = os.getenv("CORS_ALLOW_ORIGINS", "").strip()
@@ -54,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_assistant.router, prefix="/api", tags=["AI Assistant"])
     app.include_router(prescriptions.router, prefix="/api", tags=["Prescriptions"])
     app.include_router(users.router, prefix="/api", tags=["Users"])
+    app.include_router(integrations.router, prefix="/api", tags=["Integrations"])
 
     return app
 

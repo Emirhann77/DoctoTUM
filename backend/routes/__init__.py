@@ -5,5 +5,6 @@ __all__ = [
     "ai_assistant",
     "prescriptions",
     "users",
+    "integrations",
 ]
 
