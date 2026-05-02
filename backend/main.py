@@ -14,6 +14,15 @@ from backend.routes import (
 
 
 def create_app() -> FastAPI:
+    # Load local env vars from .env when present (safe in dev; ignored in prod).
+    try:
+        from dotenv import load_dotenv  # type: ignore
+
+        load_dotenv()
+    except Exception:
+        # python-dotenv is optional; environment variables can still be set externally.
+        pass
+
     app = FastAPI(
         title="DoctoTUM / CareConnect Backend",
         version="0.1.0",
