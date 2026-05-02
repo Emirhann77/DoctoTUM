@@ -3,11 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "node scripts/sync-public.mjs",
     "predev": "node scripts/sync-public.mjs",
     "dev": "next dev",
     "dev:sync": "node scripts/sync-public.mjs",
-    "build": "next build",
+    "build": "node scripts/sync-public.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "backend:dev": "python -m uvicorn backend.main:app --reload --port 8000"
