@@ -152,7 +152,7 @@ tailwind.config = {
         </div>
       </div>
 
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="mental health">
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="mental_health">
         <img src="https://i.pravatar.cc/80?img=32" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
         <div class="flex-1">
           <div class="flex justify-between">
@@ -388,6 +388,10 @@ function labelsToLangCodes(labels) {
 
 function escapeJsQuoted(s) {
   return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function escapeAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function slugFromSpecialtyName(name) {
