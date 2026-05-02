@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - Consult</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-secondary-container":"#007354","on-primary":"#ffffff","on-tertiary":"#ffffff","secondary-fixed-dim":"#62dcaf","background":"#f7f9fb","on-primary-fixed-variant":"#00419c","inverse-on-surface":"#eff1f3","tertiary":"#2724b8","on-error-container":"#93000a","on-primary-fixed":"#001945","surface-container-high":"#e6e8ea","primary-fixed":"#d9e2ff","on-tertiary-fixed":"#07006c","outline":"#737784","on-primary-container":"#bcceff","error":"#ba1a1a","surface-container-low":"#f2f4f6","surface-tint":"#1d59c1","tertiary-fixed":"#e1e0ff","on-surface-variant":"#434653","inverse-surface":"#2d3133","error-container":"#ffdad6","on-surface":"#191c1e","secondary":"#006c4f","on-background":"#191c1e","secondary-fixed":"#80f9ca","on-tertiary-fixed-variant":"#2f2ebe","on-secondary":"#ffffff","surface-dim":"#d8dadc","on-secondary-fixed-variant":"#00513b","surface-bright":"#f7f9fb","on-tertiary-container":"#c9caff","on-secondary-fixed":"#002116","tertiary-fixed-dim":"#c0c1ff","surface":"#f7f9fb","primary-container":"#0f52ba","outline-variant":"#c3c6d5","primary":"#003c90","surface-container":"#eceef0","tertiary-container":"#4243cf","on-error":"#ffffff","primary-fixed-dim":"#b0c6ff","surface-variant":"#e0e3e5","secondary-container":"#80f9ca","inverse-primary":"#b0c6ff","surface-container-highest":"#e0e3e5","surface-container-lowest":"#ffffff"
+      },
+      borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},
+      spacing:{lg:"24px",xs:"8px",xl:"32px",sm:"12px",gutter:"16px",base:"4px",margin:"20px",md:"16px"},
+      fontFamily:{"body-lg":["Public Sans"],"body-md":["Public Sans"],"h3":["Manrope"],"body-sm":["Public Sans"],"h2":["Manrope"],"label-caps":["Public Sans"],"h1":["Manrope"],"button":["Public Sans"]},
+      fontSize:{"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"h3":["20px",{"lineHeight":"28px","fontWeight":"600"}],"body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],"h2":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"h1":["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],"button":["16px",{"lineHeight":"20px","fontWeight":"600"}]}
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{min-height:max(884px,100dvh)}
+  .tab-active{background:#003c90;color:#fff;border-radius:9999px}
+  .chip-active{background:#003c90;color:#fff}
+  .chip{background:#eceef0;color:#434653;border-radius:9999px;padding:6px 16px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100">
+      <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+    </a>
+    <span class="text-lg font-bold tracking-tight text-blue-800">Consultations</span>
+  </div>
+  <a href="sos.html" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">emergency</span>
+  </a>
+</header>
+
+<main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
+
+  <!-- Search Bar -->
+  <div class="relative">
+    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+    <input id="searchInput" type="text" placeholder="Search doctors, specialties..." class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+  </div>
+
+  <!-- Specialty Chips -->
+  <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style="scrollbar-width:none">
+    <button class="chip chip-active whitespace-nowrap" onclick="filterDoctors(this,'all')">All</button>
+    <button class="chip whitespace-nowrap" onclick="filterDoctors(this,'cardiology')">Cardiology</button>
+    <button class="chip whitespace-nowrap" onclick="filterDoctors(this,'dermatology')">Dermatology</button>
+    <button class="chip whitespace-nowrap" onclick="filterDoctors(this,'pediatrics')">Pediatrics</button>
+    <button class="chip whitespace-nowrap" onclick="filterDoctors(this,'mental health')">Mental Health</button>
+    <button class="chip whitespace-nowrap" onclick="filterDoctors(this,'general')">General</button>
+  </div>
+
+  <!-- Upcoming Appointment -->
+  <div class="bg-gradient-to-br from-primary to-blue-700 rounded-3xl p-5 text-white">
+    <p class="text-blue-200 text-xs font-medium uppercase tracking-wide mb-2">Next Appointment</p>
+    <div class="flex items-center gap-4">
+      <img src="https://i.pravatar.cc/80?img=47" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover border-2 border-white/30"/>
+      <div class="flex-1">
+        <p class="font-bold">Dr. Sarah Chen</p>
+        <p class="text-blue-200 text-sm">Cardiologist</p>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="material-symbols-outlined text-sm text-yellow-300">calendar_today</span>
+          <span class="text-sm text-yellow-200 font-medium">Tomorrow, 10:00 AM</span>
+        </div>
+      </div>
+      <button onclick="showCallModal()" class="bg-white text-primary text-sm font-semibold px-4 py-2 rounded-full hover:bg-blue-50 transition-colors">
+        Join
+      </button>
+    </div>
+  </div>
+
+  <!-- Doctor List -->
+  <div>
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold text-on-surface">Available Doctors</h2>
+      <span class="text-xs text-on-surface-variant" id="doctorCount">6 available</span>
+    </div>
+    <div class="space-y-3" id="doctorList">
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="cardiology">
+        <img src="https://i.pravatar.cc/80?img=47" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. Sarah Chen</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.9</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">Cardiologist · 12 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. Sarah Chen','Cardiologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. Sarah Chen')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="dermatology">
+        <img src="https://i.pravatar.cc/80?img=25" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. Marcus Williams</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.8</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">Dermatologist · 8 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. Marcus Williams','Dermatologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. Marcus Williams')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="mental health">
+        <img src="https://i.pravatar.cc/80?img=32" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. Priya Patel</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">5.0</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">Psychiatrist · 15 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-yellow-400 rounded-full"></span><span class="text-xs text-yellow-600">In 30 min</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. Priya Patel','Psychiatrist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. Priya Patel')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="pediatrics">
+        <img src="https://i.pravatar.cc/80?img=48" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. James Okafor</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.7</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">Pediatrician · 10 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. James Okafor','Pediatrician')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. James Okafor')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="general">
+        <img src="https://i.pravatar.cc/80?img=60" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. Elena Gomez</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.9</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">General Practitioner · 11 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. Elena Gomez','General Practitioner')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. Elena Gomez')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="cardiology">
+        <img src="https://i.pravatar.cc/80?img=15" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
+        <div class="flex-1">
+          <div class="flex justify-between">
+            <p class="font-semibold text-sm">Dr. Aiden Park</p>
+            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.6</span></div>
+          </div>
+          <p class="text-xs text-on-surface-variant">Cardiologist · 7 years exp</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-slate-300 rounded-full"></span><span class="text-xs text-slate-500">Available in 2h</span></div>
+          <div class="flex gap-2 mt-3">
+            <button onclick="showBookModal('Dr. Aiden Park','Cardiologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+            <button onclick="showChatModal('Dr. Aiden Park')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lab Tests Section -->
+  <div id="lab" class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
+    <div class="px-5 py-4 border-b border-slate-100">
+      <h2 class="font-semibold text-on-surface">Lab Results</h2>
+    </div>
+    <div class="divide-y divide-slate-50">
+      <div class="px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">lab_panel</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Complete Blood Panel</p>
+          <p class="text-xs text-on-surface-variant">Apr 28 · Dr. Chen</p>
+        </div>
+        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Normal</span>
+      </div>
+      <div class="px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">lab_panel</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Lipid Panel</p>
+          <p class="text-xs text-on-surface-variant">Apr 14 · Dr. Chen</p>
+        </div>
+        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">Review</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Book Modal -->
+<div id="bookModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+  <div class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      <h2 class="font-bold text-lg" id="bookModalTitle">Book Appointment</h2>
+      <button onclick="document.getElementById('bookModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="text-sm text-on-surface-variant" id="bookModalSub"></p>
+    <div>
+      <p class="text-sm font-medium mb-2">Select Date</p>
+      <div class="grid grid-cols-5 gap-2">
+        <button class="date-btn bg-primary text-white rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Mon</p><p class="font-bold text-sm">5</p></button>
+        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Tue</p><p class="font-bold text-sm">6</p></button>
+        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Wed</p><p class="font-bold text-sm">7</p></button>
+        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Thu</p><p class="font-bold text-sm">8</p></button>
+        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Fri</p><p class="font-bold text-sm">9</p></button>
+      </div>
+    </div>
+    <div>
+      <p class="text-sm font-medium mb-2">Select Time</p>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="time-btn bg-primary text-white text-sm rounded-xl py-2" onclick="selectTime(this)">9:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">10:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">11:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">2:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">3:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">4:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">5:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">6:00 PM</button>
+      </div>
+    </div>
+    <button onclick="confirmBooking()" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors">
+      Confirm Booking
+    </button>
+  </div>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+  <div class="bg-white rounded-t-3xl w-full max-w-lg flex flex-col" style="height:85vh">
+    <div class="flex justify-between items-center p-4 border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <img src="https://i.pravatar.cc/40?img=47" class="w-10 h-10 rounded-full object-cover" id="chatAvatar"/>
+        <div>
+          <p class="font-semibold text-sm" id="chatName">Dr. Sarah Chen</p>
+          <p class="text-xs text-green-500">Online</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('chatModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
+      <div class="flex gap-2">
+        <img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/>
+        <div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">Hello! How can I help you today?</p></div>
+      </div>
+    </div>
+    <div class="p-4 border-t border-slate-100 flex gap-3">
+      <input id="chatInput" type="text" placeholder="Type a message..." class="flex-1 bg-surface-container rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" onkeypress="if(event.key==='Enter')sendMsg()"/>
+      <button onclick="sendMsg()" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition-colors">
+        <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Call Modal -->
+<div id="callModal" class="hidden fixed inset-0 bg-slate-900 z-50 flex flex-col">
+  <div class="relative flex-1 bg-slate-800 flex items-center justify-center">
+    <img src="https://i.pravatar.cc/300?img=47" alt="Doctor" class="w-full h-full object-cover opacity-80"/>
+    <div class="absolute top-4 right-4 w-28 h-36 bg-slate-700 rounded-2xl overflow-hidden border-2 border-white/20">
+      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0Lc_0jsybCfzyWC41Q4hAFR_6wQJLCGyIR4W40-LbIiJyXx6-7zuFeyh8tYzz6o-FahtkCy4diZYBuqX5M37rFUVEYYE8vwqYoFmWxaXgL_y-46Gs_3vJtutZEDBx6R7jUfUhWV_RbykByBLdaLnSnrujUKmaAlZ6wj1pAcj7sqvK1cSyodWLwmt6BJKt-b1bokZ3Lr0lulK2ritYVzzUyLInFSYO4i9Ar7IYrdBt0mW1AWdwLe20O9kkN4j4lXSN0W_WfZnIcxk" class="w-full h-full object-cover"/>
+    </div>
+    <div class="absolute top-4 left-4 bg-black/40 text-white px-3 py-1 rounded-full text-sm">Dr. Sarah Chen</div>
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4">
+      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 backdrop-blur-sm">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">mic_off</span>
+      </button>
+      <button onclick="document.getElementById('callModal').classList.add('hidden')" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">call_end</span>
+      </button>
+      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 backdrop-blur-sm">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">videocam_off</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span>Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-blue-700 bg-blue-50 rounded-xl px-3 py-1">
+    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1">video_chat</span><span>Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span>Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span>Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span>SOS</span>
+  </a>
+</nav>
+
+<script>
+function filterDoctors(btn, specialty) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
+  btn.classList.add('chip-active');
+  const cards = document.querySelectorAll('.doctor-card');
+  let count = 0;
+  cards.forEach(card => {
+    if (specialty === 'all' || card.dataset.specialty === specialty) {
+      card.style.display = ''; count++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+  document.getElementById('doctorCount').textContent = count + ' available';
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.doctor-card').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+function showBookModal(name, specialty) {
+  document.getElementById('bookModalTitle').textContent = 'Book with ' + name;
+  document.getElementById('bookModalSub').textContent = specialty + ' · Virtual Consultation';
+  document.getElementById('bookModal').classList.remove('hidden');
+}
+
+function selectDate(btn) {
+  document.querySelectorAll('.date-btn').forEach(b => { b.className = 'date-btn bg-surface-container rounded-xl py-2 text-center'; });
+  btn.className = 'date-btn bg-primary text-white rounded-xl py-2 text-center';
+}
+
+function selectTime(btn) {
+  document.querySelectorAll('.time-btn').forEach(b => { b.className = 'time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2'; });
+  btn.className = 'time-btn bg-primary text-white text-sm rounded-xl py-2';
+}
+
+function confirmBooking() {
+  document.getElementById('bookModal').classList.add('hidden');
+  alert('Appointment booked! You will receive a confirmation shortly.');
+}
+
+function showChatModal(name) {
+  document.getElementById('chatName').textContent = name;
+  document.getElementById('chatModal').classList.remove('hidden');
+}
+
+const replies = ['I understand, let me review your records.','That sounds concerning, can you describe your symptoms more?','I recommend scheduling a follow-up visit.','Based on your history, this seems normal. But let\'s monitor it.','I\'ll send a prescription to your pharmacy shortly.'];
+function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 max-w-xs"><p class="text-sm">${msg}</p></div></div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => {
+    msgs.innerHTML += `<div class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">${replies[Math.floor(Math.random()*replies.length)]}</p></div></div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 1000);
+}
+
+function showCallModal() { document.getElementById('callModal').classList.remove('hidden'); }
+</script>
+</body>
+</html>

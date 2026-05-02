@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - SOS Emergency</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container":"#007354","on-primary":"#ffffff","on-tertiary":"#ffffff","secondary-fixed-dim":"#62dcaf","background":"#f7f9fb","on-primary-fixed-variant":"#00419c","inverse-on-surface":"#eff1f3","tertiary":"#2724b8","on-error-container":"#93000a","on-primary-fixed":"#001945","surface-container-high":"#e6e8ea","primary-fixed":"#d9e2ff","on-tertiary-fixed":"#07006c","outline":"#737784","on-primary-container":"#bcceff","error":"#ba1a1a","surface-container-low":"#f2f4f6","surface-tint":"#1d59c1","tertiary-fixed":"#e1e0ff","on-surface-variant":"#434653","inverse-surface":"#2d3133","error-container":"#ffdad6","on-surface":"#191c1e","secondary":"#006c4f","on-background":"#191c1e","secondary-fixed":"#80f9ca","on-tertiary-fixed-variant":"#2f2ebe","on-secondary":"#ffffff","surface-dim":"#d8dadc","on-secondary-fixed-variant":"#00513b","surface-bright":"#f7f9fb","on-tertiary-container":"#c9caff","on-secondary-fixed":"#002116","tertiary-fixed-dim":"#c0c1ff","surface":"#f7f9fb","primary-container":"#0f52ba","outline-variant":"#c3c6d5","primary":"#003c90","surface-container":"#eceef0","tertiary-container":"#4243cf","on-error":"#ffffff","primary-fixed-dim":"#b0c6ff","surface-variant":"#e0e3e5","secondary-container":"#80f9ca","inverse-primary":"#b0c6ff","surface-container-highest":"#e0e3e5","surface-container-lowest":"#ffffff"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{lg:"24px",xs:"8px",xl:"32px",sm:"12px",gutter:"16px",base:"4px",margin:"20px",md:"16px"},fontFamily:{"body-lg":["Public Sans"],"body-md":["Public Sans"],"h3":["Manrope"],"body-sm":["Public Sans"],"h2":["Manrope"],"label-caps":["Public Sans"],"h1":["Manrope"],"button":["Public Sans"]},fontSize:{"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"h3":["20px",{"lineHeight":"28px","fontWeight":"600"}],"body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],"h2":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"h1":["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],"button":["16px",{"lineHeight":"20px","fontWeight":"600"}]}}}}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{min-height:max(884px,100dvh)}
+  @keyframes sosPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(186,26,26,0.6)}50%{transform:scale(1.05);box-shadow:0 0 0 20px rgba(186,26,26,0)}}
+  .sos-btn{animation:sosPulse 2s infinite}
+  @keyframes ring{0%,100%{box-shadow:0 0 0 0 rgba(186,26,26,0.3)}50%{box-shadow:0 0 0 16px rgba(186,26,26,0)}}
+  .sos-ring{animation:ring 1.5s infinite}
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100">
+      <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+    </a>
+    <span class="text-lg font-bold tracking-tight text-red-700">Emergency SOS</span>
+  </div>
+  <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+</header>
+
+<main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
+
+  <!-- Big SOS Button -->
+  <div class="text-center py-6">
+    <p class="text-xs text-on-surface-variant uppercase tracking-widest font-semibold mb-6">Hold for 3 seconds to activate</p>
+    <div class="relative inline-flex items-center justify-center">
+      <div class="absolute w-52 h-52 bg-red-100 rounded-full sos-ring"></div>
+      <button id="sosBtn" onmousedown="startSOS()" onmouseup="cancelSOS()" ontouchstart="startSOS()" ontouchend="cancelSOS()" class="sos-btn relative w-40 h-40 bg-error rounded-full flex flex-col items-center justify-center text-white shadow-2xl active:scale-95 select-none">
+        <span class="material-symbols-outlined text-5xl" style="font-variation-settings:'FILL' 1">emergency</span>
+        <span class="text-lg font-black tracking-widest mt-1">SOS</span>
+      </button>
+    </div>
+    <p id="sosStatus" class="text-sm text-on-surface-variant mt-6">Emergency services will be notified</p>
+  </div>
+
+  <!-- Medical ID (visible to responders) -->
+  <div class="bg-red-50 rounded-3xl border border-red-100 p-5">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">id_card</span>
+      <h2 class="font-semibold text-error">Medical ID</h2>
+      <span class="text-xs bg-red-100 text-red-500 px-2 py-0.5 rounded-full ml-auto">Visible when locked</span>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <p class="text-xs text-red-400 font-medium">Name</p>
+        <p class="font-semibold text-sm mt-0.5">Alex Johnson</p>
+      </div>
+      <div>
+        <p class="text-xs text-red-400 font-medium">DOB</p>
+        <p class="font-semibold text-sm mt-0.5">Mar 15, 1990</p>
+      </div>
+      <div>
+        <p class="text-xs text-red-400 font-medium">Blood Type</p>
+        <p class="font-semibold text-sm mt-0.5">A+</p>
+      </div>
+      <div>
+        <p class="text-xs text-red-400 font-medium">Weight</p>
+        <p class="font-semibold text-sm mt-0.5">175 lbs</p>
+      </div>
+      <div class="col-span-2">
+        <p class="text-xs text-red-400 font-medium">Allergies</p>
+        <p class="font-semibold text-sm mt-0.5">🚫 Penicillin, Sulfa drugs</p>
+      </div>
+      <div class="col-span-2">
+        <p class="text-xs text-red-400 font-medium">Conditions</p>
+        <p class="font-semibold text-sm mt-0.5">Hypertension, Type 2 Diabetes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Call Buttons -->
+  <div>
+    <h2 class="font-semibold text-on-surface mb-3">Quick Dial</h2>
+    <div class="grid grid-cols-3 gap-3">
+      <a href="tel:911" class="bg-red-600 text-white rounded-2xl p-4 flex flex-col items-center gap-2 hover:bg-red-700 transition-colors active:scale-95">
+        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">call</span>
+        <span class="text-xs font-bold">911</span>
+        <span class="text-[10px] opacity-80">Emergency</span>
+      </a>
+      <a href="tel:18002221222" class="bg-orange-500 text-white rounded-2xl p-4 flex flex-col items-center gap-2 hover:bg-orange-600 transition-colors active:scale-95">
+        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">local_hospital</span>
+        <span class="text-xs font-bold">Poison</span>
+        <span class="text-[10px] opacity-80">Control</span>
+      </a>
+      <a href="tel:988" class="bg-purple-600 text-white rounded-2xl p-4 flex flex-col items-center gap-2 hover:bg-purple-700 transition-colors active:scale-95">
+        <span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">psychology</span>
+        <span class="text-xs font-bold">988</span>
+        <span class="text-[10px] opacity-80">Crisis Line</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Emergency Contacts -->
+  <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
+    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h2 class="font-semibold text-on-surface">Emergency Contacts</h2>
+      <button onclick="addContact()" class="text-sm text-primary font-medium">+ Add</button>
+    </div>
+    <div class="divide-y divide-slate-50" id="contactsList">
+      <div class="px-5 py-4 flex items-center gap-4">
+        <img src="https://i.pravatar.cc/40?img=10" class="w-10 h-10 rounded-full object-cover"/>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Maria Johnson</p>
+          <p class="text-xs text-on-surface-variant">Spouse · +1 (555) 111-2222</p>
+        </div>
+        <a href="tel:+15551112222" class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors">
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">call</span>
+        </a>
+      </div>
+      <div class="px-5 py-4 flex items-center gap-4">
+        <img src="https://i.pravatar.cc/40?img=20" class="w-10 h-10 rounded-full object-cover"/>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Robert Johnson</p>
+          <p class="text-xs text-on-surface-variant">Father · +1 (555) 333-4444</p>
+        </div>
+        <a href="tel:+15553334444" class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors">
+          <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">call</span>
+        </a>
+      </div>
+      <div class="px-5 py-4 flex items-center gap-4">
+        <img src="https://i.pravatar.cc/40?img=47" class="w-10 h-10 rounded-full object-cover"/>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Dr. Sarah Chen</p>
+          <p class="text-xs text-on-surface-variant">Primary Doctor · CareConnect</p>
+        </div>
+        <a href="tel:+15559876543" class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors">
+          <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">call</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nearby Hospitals -->
+  <div>
+    <h2 class="font-semibold text-on-surface mb-3">Nearby Hospitals</h2>
+    <div class="space-y-3">
+      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-error text-2xl" style="font-variation-settings:'FILL' 1">local_hospital</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">General City Hospital</p>
+          <p class="text-xs text-on-surface-variant">0.8 mi · ER Open 24/7</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Low wait time</span></div>
+        </div>
+        <a href="https://maps.google.com" target="_blank" class="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">directions</span>
+        </a>
+      </div>
+      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-error text-2xl" style="font-variation-settings:'FILL' 1">local_hospital</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">St. Mary's Medical Center</p>
+          <p class="text-xs text-on-surface-variant">1.4 mi · Trauma Center</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-1.5 h-1.5 bg-yellow-400 rounded-full"></span><span class="text-xs text-yellow-600">Moderate wait</span></div>
+        </div>
+        <a href="https://maps.google.com" target="_blank" class="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">directions</span>
+        </a>
+      </div>
+      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-center gap-4 shadow-sm">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1">medication_liquid</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-semibold text-sm">CareQuick Urgent Care</p>
+          <p class="text-xs text-on-surface-variant">0.3 mi · Walk-ins welcome</p>
+          <div class="flex items-center gap-1 mt-1"><span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Open now · 10 min wait</span></div>
+        </div>
+        <a href="https://maps.google.com" target="_blank" class="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">directions</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- SOS Activated Overlay -->
+<div id="sosOverlay" class="hidden fixed inset-0 bg-red-600 z-50 flex flex-col items-center justify-center text-white">
+  <span class="material-symbols-outlined text-8xl mb-6 animate-bounce" style="font-variation-settings:'FILL' 1">emergency</span>
+  <h1 class="text-4xl font-black mb-2">CALLING 911</h1>
+  <p class="text-red-200 text-lg">Help is on the way...</p>
+  <p class="text-red-100 text-sm mt-2">📍 Location shared with responders</p>
+  <button onclick="document.getElementById('sosOverlay').classList.add('hidden')" class="mt-12 bg-white text-red-600 font-bold px-8 py-4 rounded-full text-lg">
+    Cancel
+  </button>
+</div>
+
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span>Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span>Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span>Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span>Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-red-600 bg-red-50 rounded-xl px-3 py-1">
+    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1">emergency_share</span><span>SOS</span>
+  </a>
+</nav>
+
+<script>
+let sosTimer;
+function startSOS() {
+  document.getElementById('sosStatus').textContent = 'Hold... 3';
+  let count = 3;
+  sosTimer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      document.getElementById('sosStatus').textContent = 'Hold... ' + count;
+    } else {
+      clearInterval(sosTimer);
+      document.getElementById('sosStatus').textContent = 'Emergency services will be notified';
+      document.getElementById('sosOverlay').classList.remove('hidden');
+    }
+  }, 1000);
+}
+function cancelSOS() {
+  clearInterval(sosTimer);
+  document.getElementById('sosStatus').textContent = 'Emergency services will be notified';
+}
+
+function addContact() {
+  const name = prompt('Contact name:');
+  if (!name) return;
+  const phone = prompt('Phone number:');
+  if (!phone) return;
+  const rel = prompt('Relationship:') || 'Contact';
+  const list = document.getElementById('contactsList');
+  const div = document.createElement('div');
+  div.className = 'px-5 py-4 flex items-center gap-4';
+  div.innerHTML = `<div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-slate-400" style="font-variation-settings:'FILL' 1">person</span></div><div class="flex-1"><p class="font-medium text-sm">${name}</p><p class="text-xs text-on-surface-variant">${rel} · ${phone}</p></div><a href="tel:${phone}" class="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center hover:bg-green-200 transition-colors"><span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1">call</span></a>`;
+  list.appendChild(div);
+}
+</script>
+</body>
+</html>
