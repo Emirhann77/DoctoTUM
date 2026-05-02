@@ -2,13 +2,29 @@
 // Set window.CARE_API_BASE before loading this script to override the default.
 const API_BASE = (typeof window !== 'undefined' && window.CARE_API_BASE) || 'http://localhost:8000';
 
-// Demo user — replace with real auth session once Supabase auth is wired up
-const DEMO_USER_ID = 1;
+// Returns the numeric user id from the active Supabase session, falling back to demo
+async function getCurrentUserId() {
+  if (typeof getUser === 'function') {
+    const user = await getUser();
+    if (user) {
+      // Supabase user.id is a UUID — hash to a stable int for the mock db
+      return Math.abs(user.id.split('-').join('').slice(0, 8).split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0)) || 1;
+    }
+  }
+  return 1; // demo fallback
+}
 
 async function apiFetch(path, options = {}) {
   try {
+    // Attach JWT if auth.js is loaded and a session exists
+    let authHeader = {};
+    if (typeof getAccessToken === 'function') {
+      const token = await getAccessToken();
+      if (token) authHeader = { Authorization: `Bearer ${token}` };
+    }
+
     const res = await fetch(`${API_BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...options.headers },
+      headers: { 'Content-Type': 'application/json', ...authHeader, ...options.headers },
       ...options,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -31,15 +47,17 @@ async function getAvailableSpecialists() {
 
 // ---------- Appointments ----------
 
-async function getAppointments(userId = DEMO_USER_ID) {
+async function getAppointments() {
+  const userId = await getCurrentUserId();
   return apiFetch(`/api/appointments?user_id=${userId}`);
 }
 
 async function bookAppointment({ specialistId, startTime, reason = '' }) {
+  const userId = await getCurrentUserId();
   return apiFetch('/api/appointments', {
     method: 'POST',
     body: JSON.stringify({
-      user_id: DEMO_USER_ID,
+      user_id: userId,
       specialist_id: specialistId,
       start_time: startTime,
       reason,
@@ -67,7 +85,8 @@ function preferenceContextPayload() {
   };
 }
 
-async function aiChat(message, userId = DEMO_USER_ID) {
+async function aiChat(message) {
+  const userId = await getCurrentUserId();
   return apiFetch('/api/ai_assistant/chat', {
     method: 'POST',
     body: JSON.stringify({
@@ -93,13 +112,18 @@ async function triageSymptoms({ symptoms, age = 30, knownConditions = [], durati
 // ---------- Emergency ----------
 
 async function startEmergency(symptomsOrPayload = '') {
+  const userId = await getCurrentUserId();
   const body =
-    typeof symptomsOrPayload === 'object' && symptomsOrPayload !== null && !Array.isArray(symptomsOrPayload)
-      ? { user_id: DEMO_USER_ID, ...symptomsOrPayload }
-      : { user_id: DEMO_USER_ID, symptoms: symptomsOrPayload || '' };
+    typeof symptomsOrPayload === 'object' &&
+    symptomsOrPayload !== null &&
+    !Array.isArray(symptomsOrPayload)
+      ? { user_id: userId, ...symptomsOrPayload }
+      : { user_id: userId, symptoms: symptomsOrPayload || '' };
 
   body.preferred_language =
-    typeof CarePrefs !== 'undefined' ? CarePrefs.getLanguage() : body.preferred_language;
+    typeof CarePrefs !== 'undefined'
+      ? CarePrefs.getLanguage()
+      : body.preferred_language;
 
   var locPref =
     typeof CarePrefs !== 'undefined' &&
@@ -123,15 +147,17 @@ async function endEmergency(sessionId) {
 
 // ---------- Prescriptions ----------
 
-async function getPrescriptions(userId = DEMO_USER_ID) {
+async function getPrescriptions() {
+  const userId = await getCurrentUserId();
   return apiFetch(`/api/prescriptions?user_id=${userId}`);
 }
 
 async function createPrescription({ medication, dosage, instructions, prescribedBy }) {
+  const userId = await getCurrentUserId();
   return apiFetch('/api/prescriptions', {
     method: 'POST',
     body: JSON.stringify({
-      user_id: DEMO_USER_ID,
+      user_id: userId,
       medication,
       dosage,
       instructions,
