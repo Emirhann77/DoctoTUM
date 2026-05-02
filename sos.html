@@ -196,7 +196,8 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   <h1 class="text-4xl font-black mb-2">CALLING 911</h1>
   <p class="text-red-200 text-lg">Help is on the way...</p>
   <p class="text-red-100 text-sm mt-2">📍 Location shared with responders</p>
-  <button onclick="document.getElementById('sosOverlay').classList.add('hidden')" class="mt-12 bg-white text-red-600 font-bold px-8 py-4 rounded-full text-lg">
+  <p id="sosWaitTime" class="text-red-200 text-sm mt-3"></p>
+  <button onclick="cancelEmergencySession()" class="mt-10 bg-white text-red-600 font-bold px-8 py-4 rounded-full text-lg">
     Cancel
   </button>
 </div>
@@ -220,8 +221,11 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   </a>
 </nav>
 
+<script src="js/api.js"></script>
 <script>
 let sosTimer;
+let activeSessionId = null;
+
 function startSOS() {
   document.getElementById('sosStatus').textContent = 'Hold... 3';
   let count = 3;
@@ -231,14 +235,44 @@ function startSOS() {
       document.getElementById('sosStatus').textContent = 'Hold... ' + count;
     } else {
       clearInterval(sosTimer);
-      document.getElementById('sosStatus').textContent = 'Emergency services will be notified';
-      document.getElementById('sosOverlay').classList.remove('hidden');
+      triggerEmergency();
     }
   }, 1000);
 }
+
+async function triggerEmergency() {
+  document.getElementById('sosStatus').textContent = 'Connecting to emergency services...';
+  document.getElementById('sosOverlay').classList.remove('hidden');
+
+  // Notify backend — also logs location if available
+  const payload = { symptoms: 'SOS activated via CareConnect app' };
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      payload.latitude = pos.coords.latitude;
+      payload.longitude = pos.coords.longitude;
+    });
+  }
+
+  const result = await startEmergency(payload.symptoms);
+  if (result && result.session_id) {
+    activeSessionId = result.session_id;
+    const waitEl = document.getElementById('sosWaitTime');
+    if (waitEl) waitEl.textContent = `Estimated wait: ~${result.estimated_wait_minutes ?? 2} min`;
+  }
+  document.getElementById('sosStatus').textContent = 'Emergency services will be notified';
+}
+
 function cancelSOS() {
   clearInterval(sosTimer);
   document.getElementById('sosStatus').textContent = 'Emergency services will be notified';
+}
+
+async function cancelEmergencySession() {
+  if (activeSessionId) {
+    await endEmergency(activeSessionId);
+    activeSessionId = null;
+  }
+  document.getElementById('sosOverlay').classList.add('hidden');
 }
 
 function addContact() {

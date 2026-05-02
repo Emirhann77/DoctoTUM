@@ -322,5 +322,17 @@ tailwind.config = {
   </a>
 </nav>
 
+<script src="js/api.js"></script>
+<script>
+// Load real appointment count from backend if available
+async function loadDashboardStats() {
+  const appointments = await getAppointments();
+  if (appointments && Array.isArray(appointments)) {
+    const el = document.querySelector('[data-stat="appointments"]');
+    if (el) el.textContent = appointments.length;
+  }
+}
+document.addEventListener('DOMContentLoaded', loadDashboardStats);
+</script>
 </body>
 </html>

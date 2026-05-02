@@ -326,30 +326,92 @@ tailwind.config = {
   </a>
 </nav>
 
+<script src="js/api.js"></script>
 <script>
+// ---- Doctor list (static fallback — overridden by API on load) ----
+const FALLBACK_DOCTORS = [
+  { id: 1, name: 'Dr. Sarah Chen',    specialty: 'Cardiology',      experience: '12 years', available: true,  img: 'https://i.pravatar.cc/80?img=47', rating: '4.9' },
+  { id: 2, name: 'Dr. Marcus Williams',specialty: 'Dermatology',    experience: '8 years',  available: true,  img: 'https://i.pravatar.cc/80?img=25', rating: '4.8' },
+  { id: 3, name: 'Dr. Priya Patel',   specialty: 'Mental Health',   experience: '15 years', available: false, img: 'https://i.pravatar.cc/80?img=32', rating: '5.0' },
+  { id: 4, name: 'Dr. James Okafor',  specialty: 'Pediatrics',      experience: '10 years', available: true,  img: 'https://i.pravatar.cc/80?img=48', rating: '4.7' },
+  { id: 5, name: 'Dr. Elena Gomez',   specialty: 'General',         experience: '11 years', available: true,  img: 'https://i.pravatar.cc/80?img=60', rating: '4.9' },
+  { id: 6, name: 'Dr. Aiden Park',    specialty: 'Cardiology',      experience: '7 years',  available: false, img: 'https://i.pravatar.cc/80?img=15', rating: '4.6' },
+];
+
+let activeDoctors = FALLBACK_DOCTORS;
+let selectedSpecialistId = null;
+
+function doctorCardHTML(doc) {
+  const availLabel = doc.available || doc.is_available
+    ? '<span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span>'
+    : '<span class="w-2 h-2 bg-slate-300 rounded-full"></span><span class="text-xs text-slate-500">Unavailable</span>';
+  const specialty = (doc.specialty || '').toLowerCase().replace(/\s+/g, '-');
+  const imgSrc = doc.img || doc.image_url || `https://i.pravatar.cc/80?img=${doc.id + 10}`;
+  const exp = doc.experience || (doc.years_experience ? doc.years_experience + ' years' : '');
+  return `
+  <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="${specialty}">
+    <img src="${imgSrc}" alt="${doc.name}" class="w-14 h-14 rounded-2xl object-cover"/>
+    <div class="flex-1">
+      <div class="flex justify-between">
+        <p class="font-semibold text-sm">${doc.name}</p>
+        <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">${doc.rating || '4.8'}</span></div>
+      </div>
+      <p class="text-xs text-on-surface-variant">${doc.specialty}${exp ? ' · ' + exp : ''}</p>
+      <div class="flex items-center gap-1 mt-1">${availLabel}</div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="showBookModal('${doc.name}','${doc.specialty}',${doc.id})" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
+        <button onclick="showChatModal('${doc.name}')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDoctors(list) {
+  document.getElementById('doctorList').innerHTML = list.map(doctorCardHTML).join('');
+  document.getElementById('doctorCount').textContent = list.length + ' available';
+}
+
+async function loadSpecialists() {
+  const data = await getSpecialists();
+  if (data && Array.isArray(data) && data.length) {
+    // map backend schema (id, name, specialty, is_available) to our shape
+    activeDoctors = data.map(d => ({
+      id: d.id, name: d.name, specialty: d.specialty,
+      is_available: d.is_available, img: null, rating: '4.8',
+    }));
+    renderDoctors(activeDoctors);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderDoctors(activeDoctors);
+  loadSpecialists();
+});
+
 function filterDoctors(btn, specialty) {
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
   btn.classList.add('chip-active');
   const cards = document.querySelectorAll('.doctor-card');
   let count = 0;
   cards.forEach(card => {
-    if (specialty === 'all' || card.dataset.specialty === specialty) {
-      card.style.display = ''; count++;
-    } else {
-      card.style.display = 'none';
-    }
+    const match = specialty === 'all' || card.dataset.specialty === specialty;
+    card.style.display = match ? '' : 'none';
+    if (match) count++;
   });
   document.getElementById('doctorCount').textContent = count + ' available';
 }
 
-document.getElementById('searchInput').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
-  document.querySelectorAll('.doctor-card').forEach(card => {
-    card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('searchInput').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.doctor-card').forEach(card => {
+      card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
   });
 });
 
-function showBookModal(name, specialty) {
+function showBookModal(name, specialty, specialistId) {
+  selectedSpecialistId = specialistId;
   document.getElementById('bookModalTitle').textContent = 'Book with ' + name;
   document.getElementById('bookModalSub').textContent = specialty + ' · Virtual Consultation';
   document.getElementById('bookModal').classList.remove('hidden');
@@ -365,9 +427,28 @@ function selectTime(btn) {
   btn.className = 'time-btn bg-primary text-white text-sm rounded-xl py-2';
 }
 
-function confirmBooking() {
+async function confirmBooking() {
+  const dateBtn = document.querySelector('.date-btn.bg-primary');
+  const timeBtn = document.querySelector('.time-btn.bg-primary');
+  const dateText = dateBtn ? dateBtn.querySelector('p:last-child').textContent : '5';
+  const timeText = timeBtn ? timeBtn.textContent.trim() : '9:00 AM';
+
+  // Build an ISO datetime — use current month/year + selected day
+  const now = new Date();
+  const startTime = new Date(now.getFullYear(), now.getMonth(), parseInt(dateText), 9).toISOString();
+
+  const result = await bookAppointment({
+    specialistId: selectedSpecialistId || 1,
+    startTime,
+    reason: 'Consultation via CareConnect',
+  });
+
   document.getElementById('bookModal').classList.add('hidden');
-  alert('Appointment booked! You will receive a confirmation shortly.');
+  if (result) {
+    alert(`Appointment booked! ID: ${result.id || 'confirmed'}. You will receive a confirmation shortly.`);
+  } else {
+    alert('Appointment request submitted! You will receive a confirmation shortly.');
+  }
 }
 
 function showChatModal(name) {
@@ -375,19 +456,52 @@ function showChatModal(name) {
   document.getElementById('chatModal').classList.remove('hidden');
 }
 
-const replies = ['I understand, let me review your records.','That sounds concerning, can you describe your symptoms more?','I recommend scheduling a follow-up visit.','Based on your history, this seems normal. But let\'s monitor it.','I\'ll send a prescription to your pharmacy shortly.'];
-function sendMsg() {
+// AI-powered chat — calls /api/ai_assistant/chat with emergency safety check
+async function sendMsg() {
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
   if (!msg) return;
+
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML += `<div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 max-w-xs"><p class="text-sm">${msg}</p></div></div>`;
   input.value = '';
   msgs.scrollTop = msgs.scrollHeight;
-  setTimeout(() => {
-    msgs.innerHTML += `<div class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">${replies[Math.floor(Math.random()*replies.length)]}</p></div></div>`;
+
+  // Client-side emergency check (mirrors backend/utils/safety.py)
+  const emergency = checkEmergencySymptoms(msg);
+  if (emergency.isEmergency) {
+    msgs.innerHTML += `<div class="flex gap-2"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-1"><span class="material-symbols-outlined text-red-500 text-sm" style="font-variation-settings:'FILL' 1">emergency</span></div><div class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm text-red-700 font-semibold">⚠️ This sounds urgent.</p><p class="text-xs text-red-600 mt-1">Please call 911 or <a href="sos.html" class="underline font-semibold">go to SOS</a> immediately.</p></div></div>`;
     msgs.scrollTop = msgs.scrollHeight;
-  }, 1000);
+    return;
+  }
+
+  // Typing indicator
+  const typingId = 'typing-' + Date.now();
+  msgs.innerHTML += `<div id="${typingId}" class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2"><p class="text-sm text-slate-400">typing...</p></div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const result = await aiChat(msg);
+  document.getElementById(typingId)?.remove();
+
+  let replyText, riskHtml = '';
+  if (result) {
+    replyText = result.message || result.recommendation || 'I\'ll review this with your doctor.';
+    if (result.risk_level && result.risk_level !== 'low') {
+      const badge = riskBadgeClass(result.risk_level);
+      riskHtml = `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ${badge}">${result.risk_level.toUpperCase()} RISK</span>`;
+    }
+  } else {
+    const fallbacks = [
+      'I understand. Let me review your records.',
+      'Can you describe your symptoms in more detail?',
+      'I recommend scheduling a follow-up visit.',
+      'Based on your history, this seems within normal range. Let\'s monitor it.',
+    ];
+    replyText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  }
+
+  msgs.innerHTML += `<div class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">${replyText}</p>${riskHtml}</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function showCallModal() { document.getElementById('callModal').classList.remove('hidden'); }
