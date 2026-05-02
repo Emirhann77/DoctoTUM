@@ -53,10 +53,28 @@ async function cancelAppointment(appointmentId) {
 
 // ---------- AI Assistant ----------
 
+function preferenceContextPayload() {
+  if (typeof window === 'undefined' || typeof CarePrefs === 'undefined') return {};
+  var loc = CarePrefs.getLocationForPayload && CarePrefs.getLocationForPayload();
+  var prefConsult =
+    typeof CarePrefs.getPreferredConsultLanguage === 'function'
+      ? CarePrefs.getPreferredConsultLanguage()
+      : '';
+  return {
+    language: CarePrefs.getLanguage(),
+    ...(loc ? { location: loc } : {}),
+    ...(prefConsult ? { preferred_consult_language: prefConsult } : {}),
+  };
+}
+
 async function aiChat(message, userId = DEMO_USER_ID) {
   return apiFetch('/api/ai_assistant/chat', {
     method: 'POST',
-    body: JSON.stringify({ user_message: message, user_id: userId }),
+    body: JSON.stringify({
+      user_message: message,
+      user_id: userId,
+      ...preferenceContextPayload(),
+    }),
   });
 }
 
@@ -74,10 +92,25 @@ async function triageSymptoms({ symptoms, age = 30, knownConditions = [], durati
 
 // ---------- Emergency ----------
 
-async function startEmergency(symptoms = '') {
+async function startEmergency(symptomsOrPayload = '') {
+  const body =
+    typeof symptomsOrPayload === 'object' && symptomsOrPayload !== null && !Array.isArray(symptomsOrPayload)
+      ? { user_id: DEMO_USER_ID, ...symptomsOrPayload }
+      : { user_id: DEMO_USER_ID, symptoms: symptomsOrPayload || '' };
+
+  body.preferred_language =
+    typeof CarePrefs !== 'undefined' ? CarePrefs.getLanguage() : body.preferred_language;
+
+  var locPref =
+    typeof CarePrefs !== 'undefined' &&
+    typeof CarePrefs.getLocationForPayload === 'function'
+      ? CarePrefs.getLocationForPayload()
+      : null;
+  if (locPref && !body.location) body.location = locPref;
+
   return apiFetch('/api/emergency/start', {
     method: 'POST',
-    body: JSON.stringify({ user_id: DEMO_USER_ID, symptoms }),
+    body: JSON.stringify(body),
   });
 }
 

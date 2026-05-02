@@ -23,6 +23,9 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
     <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100">
       <span class="material-symbols-outlined text-on-surface">arrow_back</span>
     </a>
+    <select id="careHeaderLang" class="text-xs border border-slate-200 rounded-lg px-1.5 py-1 bg-white w-[4.25rem] shrink-0 cursor-pointer mr-1" title="Language">
+      <option value="en">EN</option><option value="de">DE</option><option value="tr">TR</option><option value="es">ES</option><option value="fr">FR</option>
+    </select>
     <span class="text-lg font-bold tracking-tight text-blue-800">Pharmacy</span>
   </div>
   <a href="sos.html" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50">
@@ -226,22 +229,25 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
 <!-- BottomNavBar -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
   <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
-    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span>Home</span>
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span data-i18n="nav.home">Home</span>
   </a>
   <a href="consult.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
-    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span>Consult</span>
+    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span data-i18n="nav.consult">Consult</span>
   </a>
   <a href="pharmacy.html" class="flex flex-col items-center justify-center text-blue-700 bg-blue-50 rounded-xl px-3 py-1">
-    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1">prescriptions</span><span>Pharmacy</span>
+    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1">prescriptions</span><span data-i18n="nav.pharmacy">Pharmacy</span>
   </a>
   <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
-    <span class="material-symbols-outlined text-2xl mb-1">person</span><span>Profile</span>
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span data-i18n="nav.profile">Profile</span>
   </a>
   <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
-    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span>SOS</span>
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span data-i18n="nav.sos">SOS</span>
   </a>
 </nav>
 
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/languageContext.js"></script>
 <script src="js/api.js"></script>
 <script>
 let cartCount = 0;
