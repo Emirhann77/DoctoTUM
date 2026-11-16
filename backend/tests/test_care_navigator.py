@@ -4,26 +4,41 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.database import db
 from backend.main import app
 from backend.services import care_navigator
+from backend.store import memory
+from backend.tests.conftest import as_user
 from backend.utils import safety
 
 ROOT = Path(__file__).resolve().parents[2]
 CASES = json.loads((ROOT / "tests" / "care_rules.cases.json").read_text(encoding="utf-8"))
 
-client = TestClient(app)
 
 
-@pytest.fixture(autouse=True)
-def _mock_mode(monkeypatch):
-    for var in ("OPENAI_API_KEY", "SUPABASE_SERVICE_ROLE_KEY"):
-        monkeypatch.delenv(var, raising=False)
+class _SignedInClient:
+    """These tests are about triage, not auth: every request is made as a signed-in user."""
+
+    def __init__(self):
+        self._client = TestClient(app)
+
+    def post(self, url, **kwargs):
+        return self._client.post(url, headers=as_user(), **kwargs)
+
+    def get(self, url, **kwargs):
+        return self._client.get(url, headers=as_user(), **kwargs)
+
+
+client = _SignedInClient()
+
+
+class db:  # the doctors the in-memory store ships with
+    list_specialists = staticmethod(lambda: list(memory.SPECIALISTS))
 
 
 # --- shared cases: the same file is run against public/js/navigator.js -------------
@@ -139,13 +154,12 @@ def test_can_book_the_matched_specialist():
     r = client.post(
         "/api/appointments",
         json={
-            "user_id": 1,
             "specialist_id": match["specialist"]["id"],
-            "start_time": "2026-12-01T09:00:00Z",
+            "start_time": (datetime.now(tz=timezone.utc) + timedelta(days=7)).isoformat(),
             "reason": "Symptom check: low mood",
         },
     )
-    assert r.status_code == 200
+    assert r.status_code == 201
     assert r.json()["reason"] == "Symptom check: low mood"
 
 

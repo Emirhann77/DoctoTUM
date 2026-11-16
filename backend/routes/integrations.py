@@ -1,20 +1,22 @@
 from __future__ import annotations
 
-import os
-
 from fastapi import APIRouter
 
-from backend.services.supabase_sync import is_supabase_rest_configured
+from backend import config
 
 router = APIRouter()
 
 
 @router.get("/integrations/status")
 def integration_status():
-    openai = bool((os.getenv("OPENAI_API_KEY") or "").strip())
+    supabase = config.supabase_configured()
+    openai = bool(config.openai_key())
     return {
-        "supabase_rest_configured": is_supabase_rest_configured(),
-        "openai_configured": openai,
+        "data_store": "supabase" if supabase else "in_memory",
+        "auth": "supabase_token" if config.auth_required() else "demo_user",
+        "specialists_source": "supabase" if supabase else "in_memory",
         "ai_mode": "openai" if openai else "mock",
-        "specialists_source": "supabase" if is_supabase_rest_configured() else "mock_in_memory",
+        # kept for the Next.js status page
+        "supabase_rest_configured": supabase,
+        "openai_configured": openai,
     }

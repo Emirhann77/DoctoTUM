@@ -4,6 +4,7 @@ __all__ = [
     "care",
     "emergency",
     "ai_assistant",
+    "pharmacy",
     "prescriptions",
     "users",
     "integrations",

@@ -114,7 +114,7 @@ def _mock_chat_reply(user_message: str) -> AIChatResponse:
     )
 
 
-def chat(user_message: str, user_id: Optional[int], language: Optional[str] = None) -> AIChatResponse:
+def chat(user_message: str, language: Optional[str] = None) -> AIChatResponse:
     er = safety.check_emergency_symptoms(user_message)
     if er.is_emergency:
         em = safety.emergency_message()

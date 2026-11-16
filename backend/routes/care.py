@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
+from backend.auth import current_user
 from backend.models.schemas import CareNavigateRequest, CareNavigateResponse
-from backend.services import care_navigator, supabase_sync
+from backend.services import care_navigator, directory
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(current_user)])
 
 
 @router.get("/care/rules")
@@ -29,7 +30,7 @@ def navigate(body: CareNavigateRequest):
     matches = []
     if outcome["urgency"] != "emergency":
         matches = care_navigator.rank_specialists(
-            supabase_sync.list_specialists_unified(),
+            directory.list_specialists(),
             specialty=outcome["specialty_slug"],
             language=match_language or "",
             city=(body.location.city or "") if body.location else "",
