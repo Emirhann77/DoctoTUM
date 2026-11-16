@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/ai_assistant/chat", response_model=AIChatResponse)
 def ai_chat(body: AIChatRequest):
-    return ai_responses.chat(body.user_message, body.user_id)
+    return ai_responses.chat(body.user_message, body.user_id, body.language)
 
 
 @router.post("/ai_assistant/triage", response_model=TriageResponse)

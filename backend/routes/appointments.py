@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from backend.database import db
 from backend.models.schemas import Appointment, AppointmentCreateRequest
+from backend.services import supabase_sync
 
 router = APIRouter()
 
@@ -17,7 +18,7 @@ def list_appointments(user_id: int = Query(..., ge=1)):
 
 @router.post("/appointments", response_model=Appointment)
 def create_appointment(body: AppointmentCreateRequest):
-    spec = db.get_specialist_by_id(body.specialist_id)
+    spec = supabase_sync.get_specialist_unified(body.specialist_id)
     if not spec:
         raise HTTPException(status_code=404, detail="Specialist not found")
     return db.create_appointment(

@@ -1,4 +1,4 @@
-# DoctoTUM FastAPI backend (run: uvicorn backend.main:app --reload --port 8000)
+# DoctoTUM FastAPI backend (from the repo root: pip install -r backend/requirements.txt, then npm run backend:dev)
 fastapi>=0.115.0
 uvicorn[standard]>=0.32.0
 pydantic>=2.0.0

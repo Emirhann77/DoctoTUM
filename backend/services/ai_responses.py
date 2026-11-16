@@ -15,7 +15,10 @@ from backend.models.schemas import AIChatResponse, TriageResponse
 from backend.utils import safety
 
 
-def _openai_chat_completion(user_message: str) -> Optional[str]:
+_REPLY_LANGUAGES = {"en": "English", "de": "German", "tr": "Turkish", "es": "Spanish", "fr": "French"}
+
+
+def _openai_chat_completion(user_message: str, language: Optional[str] = None) -> Optional[str]:
     key = (os.getenv("OPENAI_API_KEY") or "").strip()
     if not key:
         return None
@@ -37,6 +40,11 @@ def _openai_chat_completion(user_message: str) -> Optional[str]:
                                 "You are a cautious medical triage assistant for a telehealth app. "
                                 "Do not diagnose. Give short, clear guidance. "
                                 "If symptoms sound severe or emergency-like, tell the user to seek urgent care."
+                                + (
+                                    f" Reply in {_REPLY_LANGUAGES[language]}."
+                                    if language in _REPLY_LANGUAGES
+                                    else ""
+                                )
                             ),
                         },
                         {"role": "user", "content": user_message},
@@ -106,7 +114,7 @@ def _mock_chat_reply(user_message: str) -> AIChatResponse:
     )
 
 
-def chat(user_message: str, user_id: Optional[int]) -> AIChatResponse:
+def chat(user_message: str, user_id: Optional[int], language: Optional[str] = None) -> AIChatResponse:
     er = safety.check_emergency_symptoms(user_message)
     if er.is_emergency:
         em = safety.emergency_message()
@@ -116,7 +124,7 @@ def chat(user_message: str, user_id: Optional[int]) -> AIChatResponse:
             recommendation=em["recommendation"],
         )
 
-    live = _openai_chat_completion(user_message)
+    live = _openai_chat_completion(user_message, language)
     if live:
         lower = user_message.lower()
         if any(w in lower for w in ("chest", "breath", "severe", "fever", "bleed", "suicid")):

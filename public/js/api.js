@@ -109,6 +109,45 @@ async function triageSymptoms({ symptoms, age = 30, knownConditions = [], durati
   });
 }
 
+// ---------- Care Navigator ----------
+
+// input: { symptoms: [slug], description, severity, duration, age, known_conditions }
+async function careNavigate(input) {
+  return apiFetch('/api/care/navigate', {
+    method: 'POST',
+    body: JSON.stringify({ ...input, ...preferenceContextPayload() }),
+  });
+}
+
+// Writes the check to the signed-in user's own rows in Supabase `user_symptoms`
+// (RLS: user_id = auth.uid()). Only called when the user explicitly asks to save.
+// labels: { slug: English label } used when a slug is not in symptom_definitions.
+async function saveSymptomCheck({ symptoms, description, severity, labels = {} }) {
+  try {
+    const client = typeof getSupabase === 'function' ? getSupabase() : null;
+    const user = typeof getUser === 'function' ? await getUser() : null;
+    if (!client || !user) return false;
+
+    let idBySlug = {};
+    if (symptoms.length) {
+      const { data, error } = await client.from('symptom_definitions').select('id, slug').in('slug', symptoms);
+      if (error) throw error;
+      (data || []).forEach((row) => { idBySlug[row.slug] = row.id; });
+    }
+    const base = { user_id: user.id, severity, notes: description || null };
+    const rows = symptoms.length
+      ? symptoms.map((slug) =>
+          idBySlug[slug] ? { ...base, symptom_id: idBySlug[slug] } : { ...base, custom_label: labels[slug] || slug })
+      : [{ ...base, custom_label: (description || '').slice(0, 80) }];
+    const { error } = await client.from('user_symptoms').insert(rows);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.warn('[api] saving symptom check failed', err.message || err);
+    return false;
+  }
+}
+
 // ---------- Emergency ----------
 
 async function startEmergency(symptomsOrPayload = '') {
@@ -169,19 +208,85 @@ async function createPrescription({ medication, dosage, instructions, prescribed
 // ---------- Risk level helpers (mirrors backend/utils/safety.py) ----------
 
 const EMERGENCY_PHRASES = [
-  'chest pain','pressure in my chest','difficulty breathing',
-  'can\'t breathe','cant breathe','shortness of breath',
-  'loss of consciousness','passed out','fainted','stroke',
-  'face drooping','arm weakness','slurred speech',
-  'severe bleeding','bleeding heavily','suicidal',
-  'suicidal thoughts','kill myself','self harm',
-  'severe allergic reaction','anaphylaxis',
-  'swelling of the tongue','swelling of the throat',
+  "chest pain",
+  "pressure in my chest",
+  "difficulty breathing",
+  "can't breathe",
+  "cant breathe",
+  "shortness of breath",
+  "loss of consciousness",
+  "passed out",
+  "fainted",
+  "stroke",
+  "face drooping",
+  "arm weakness",
+  "slurred speech",
+  "severe bleeding",
+  "bleeding heavily",
+  "suicidal",
+  "suicidal thoughts",
+  "kill myself",
+  "self harm",
+  "severe allergic reaction",
+  "anaphylaxis",
+  "swelling of the tongue",
+  "swelling of the throat",
+  "suicid",
+  "brustschmerz",
+  "druck auf der brust",
+  "atemnot",
+  "keine luft",
+  "bewusstlos",
+  "ohnmächtig",
+  "schlaganfall",
+  "starke blutung",
+  "selbstmord",
+  "mich umbringen",
+  "anaphylaxie",
+  "göğüs ağrısı",
+  "göğsümde ağrı",
+  "nefes alamıyorum",
+  "nefes darlığı",
+  "bayıldım",
+  "bilinç kaybı",
+  "felç",
+  "şiddetli kanama",
+  "intihar",
+  "kendimi öldür",
+  "anafilaksi",
+  "dolor en el pecho",
+  "dolor de pecho",
+  "no puedo respirar",
+  "dificultad para respirar",
+  "falta de aire",
+  "me desmayé",
+  "pérdida de conciencia",
+  "derrame cerebral",
+  "sangrado abundante",
+  "hemorragia grave",
+  "anafilaxia",
+  "douleur thoracique",
+  "douleur à la poitrine",
+  "douleur dans la poitrine",
+  "du mal à respirer",
+  "pas à respirer",
+  "difficulté à respirer",
+  "perte de connaissance",
+  "évanoui",
+  "saignement abondant",
+  "hémorragie",
+  "choc anaphylactique",
 ];
 
+// Turkish I/ı/İ do not round-trip through toLowerCase(); fold them so text typed
+// in capitals still matches. Mirrors fold() in backend/utils/safety.py.
+function foldForMatch(text) {
+  return String(text || '').toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i');
+}
+
 function checkEmergencySymptoms(text) {
-  const lower = (text || '').toLowerCase();
-  const matched = EMERGENCY_PHRASES.filter(p => lower.includes(p));
+  const haystack = foldForMatch(text);
+  const matched = EMERGENCY_PHRASES.filter(p => haystack.includes(foldForMatch(p)));
   return { isEmergency: matched.length > 0, matched };
 }
 

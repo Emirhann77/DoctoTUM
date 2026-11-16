@@ -6,6 +6,7 @@ Falls back to in-memory mock specialists in database/db.py when not configured o
 from __future__ import annotations
 
 import os
+import zlib
 from typing import List, Optional
 
 import httpx
@@ -56,7 +57,7 @@ def fetch_providers_from_supabase() -> Optional[List[Specialist]]:
         pid = row.get("id")
         # Stable int id for UI / booking (demo); uuid string hashed
         if isinstance(pid, str):
-            sid = 10_000 + (abs(hash(pid)) % 900_000)
+            sid = 10_000 + (zlib.crc32(pid.encode("utf-8")) % 900_000)
         else:
             sid = int(pid) if pid is not None else 10_000 + i
         name = row.get("display_name") or "Provider"
@@ -80,6 +81,10 @@ def list_specialists_unified() -> List[Specialist]:
     if remote:
         return remote
     return db.list_specialists()
+
+
+def get_specialist_unified(specialist_id: int) -> Optional[Specialist]:
+    return next((s for s in list_specialists_unified() if s.id == specialist_id), None)
 
 
 def list_available_specialists_unified() -> List[Specialist]:

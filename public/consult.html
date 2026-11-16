@@ -75,6 +75,9 @@ tailwind.config = {
   </div>
 
   <div id="consultFiltersCard" class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 space-y-3">
+    <p id="checkHandoffNote" class="hidden flex items-center gap-2 text-xs font-medium text-secondary bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+      <span class="material-symbols-outlined text-base" aria-hidden="true">stethoscope</span><span data-i18n="consult.fromCheck">Matched from your symptom check</span>
+    </p>
     <p class="text-xs font-semibold uppercase tracking-wide text-on-surface" data-i18n="consult.filtersTitle">Find care</p>
     <label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
       <input type="checkbox" id="filterNearMe" class="rounded border-slate-300 text-primary focus:ring-primary/30"/>
@@ -260,25 +263,19 @@ tailwind.config = {
     <p class="text-sm text-on-surface-variant" id="bookModalSub"></p>
     <div>
       <p class="text-sm font-medium mb-2" data-i18n="consult.selectDate">Select Date</p>
-      <div class="grid grid-cols-5 gap-2">
-        <button class="date-btn bg-primary text-white rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Mon</p><p class="font-bold text-sm">5</p></button>
-        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Tue</p><p class="font-bold text-sm">6</p></button>
-        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Wed</p><p class="font-bold text-sm">7</p></button>
-        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Thu</p><p class="font-bold text-sm">8</p></button>
-        <button class="date-btn bg-surface-container rounded-xl py-2 text-center" onclick="selectDate(this)"><p class="text-xs">Fri</p><p class="font-bold text-sm">9</p></button>
-      </div>
+      <div class="grid grid-cols-5 gap-2" id="dateButtons"></div>
     </div>
     <div>
       <p class="text-sm font-medium mb-2" data-i18n="consult.selectTime">Select Time</p>
       <div class="grid grid-cols-4 gap-2">
-        <button class="time-btn bg-primary text-white text-sm rounded-xl py-2" onclick="selectTime(this)">9:00 AM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">10:00 AM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">11:00 AM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">2:00 PM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">3:00 PM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">4:00 PM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">5:00 PM</button>
-        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" onclick="selectTime(this)">6:00 PM</button>
+        <button class="time-btn bg-primary text-white text-sm rounded-xl py-2" data-hour="9" onclick="selectTime(this)">9:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="10" onclick="selectTime(this)">10:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="11" onclick="selectTime(this)">11:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="14" onclick="selectTime(this)">2:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="15" onclick="selectTime(this)">3:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="16" onclick="selectTime(this)">4:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="17" onclick="selectTime(this)">5:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="18" onclick="selectTime(this)">6:00 PM</button>
       </div>
     </div>
     <button onclick="confirmBooking()" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors" data-i18n="consult.confirmBooking">
@@ -360,32 +357,9 @@ tailwind.config = {
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/languageContext.js"></script>
 <script src="js/api.js"></script>
+<script src="js/doctors.js"></script>
 <script>
-// ---- Specialty / language helpers -------------------------------------------------
-function labelsToLangCodes(labels) {
-  if (!labels || !labels.length) return [];
-  var nameMap = {
-    english: 'en',
-    german: 'de',
-    turkish: 'tr',
-    spanish: 'es',
-    french: 'fr',
-  };
-  var out = labels.map(function (x) {
-    var raw = String(x || '').trim();
-    var low = raw.toLowerCase();
-    var direct = nameMap[low];
-    if (direct) return direct;
-    var k = low.replace(/\./g, '');
-    var kk;
-    for (kk in nameMap) if (k.indexOf(kk) !== -1) return nameMap[kk];
-    var two = raw.slice(0, 2).toLowerCase();
-    if (['en', 'de', 'tr', 'es', 'fr'].indexOf(two) !== -1) return two;
-    return '';
-  }).filter(Boolean);
-  return out.length ? out : [];
-}
-
+// Doctor records, FALLBACK_DOCTORS and specialty/language helpers live in js/doctors.js
 function escapeJsQuoted(s) {
   return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
@@ -394,65 +368,7 @@ function escapeAttr(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function slugFromSpecialtyName(name) {
-  var s = String(name || '').toLowerCase();
-  if (s.includes('mental') || s.includes('psychiat') || s.includes('psychology')) return 'mental_health';
-  if (s.includes('cardio')) return 'cardiology';
-  if (s.includes('derma')) return 'dermatology';
-  if (s.includes('pediatr')) return 'pediatrics';
-  if (s.includes('general')) return 'general';
-  if (s.includes('emergency')) return 'general';
-  return 'general';
-}
-
-function normalizeDoctorRecord(d, fromApi) {
-  var slug = slugFromSpecialtyName(d.specialty || d.specialization);
-  var locStr = String(d.location || d.city_hint || '').trim();
-  var city = d.city || (fromApi ? locStr : locStr), country = d.country || '';
-  var codes =
-    Array.isArray(d.languageCodes) && d.languageCodes.length
-      ? d.languageCodes
-      : labelsToLangCodes(d.languages || []);
-  if (!codes.length) codes = ['en'];
-  return {
-    id: d.id,
-    name: d.name,
-    specialty: d.specialty,
-    specialtySlug: d.specialtySlug || slug,
-    city: city,
-    country: country,
-    languages: d.languages,
-    languageCodes: codes,
-    img: d.img || d.image_url || null,
-    rating: String(d.rating || '4.8'),
-    is_available: typeof d.is_available === 'boolean' ? d.is_available : !!d.available,
-    available:
-      typeof d.available === 'boolean'
-        ? d.available
-        : typeof d.is_available === 'boolean'
-          ? d.is_available
-          : true,
-    experience: d.experience || (d.years_experience ? d.years_experience + ' years' : ''),
-  };
-}
-
 let activeChipSpecialty = 'all';
-
-// ---- Doctor list (static fallback — overridden by API on load) -------------------
-const FALLBACK_DOCTORS = [
-  normalizeDoctorRecord({ id: 1, name: 'Dr. Sarah Chen', specialty: 'Cardiology', experience: '12 years',
-    rating: '4.9', available: true, img: 'https://i.pravatar.cc/80?img=47', city: 'Munich', country: 'Germany', languages: ['English', 'German'] }),
-  normalizeDoctorRecord({ id: 2, name: 'Dr. Marcus Williams', specialty: 'Dermatology', experience: '8 years',
-    rating: '4.8', available: true, img: 'https://i.pravatar.cc/80?img=25', city: 'Munich', country: 'Germany', languages: ['English', 'Spanish'] }),
-  normalizeDoctorRecord({ id: 3, name: 'Dr. Priya Patel', specialty: 'Psychiatry', experience: '15 years',
-    rating: '5.0', available: false, img: 'https://i.pravatar.cc/80?img=32', city: 'Berlin', country: 'Germany', languages: ['English', 'Hindi', 'German'] }),
-  normalizeDoctorRecord({ id: 4, name: 'Dr. James Okafor', specialty: 'Pediatrics', experience: '10 years',
-    rating: '4.7', available: true, img: 'https://i.pravatar.cc/80?img=48', city: 'Paris', country: 'France', languages: ['English', 'French'] }),
-  normalizeDoctorRecord({ id: 5, name: 'Dr. Elena Gomez', specialty: 'General Practitioner', experience: '11 years',
-    rating: '4.9', available: true, img: 'https://i.pravatar.cc/80?img=60', city: 'Madrid', country: 'Spain', languages: ['Spanish', 'English'] }),
-  normalizeDoctorRecord({ id: 6, name: 'Dr. Aiden Park', specialty: 'Cardiology', experience: '7 years',
-    rating: '4.6', available: false, img: 'https://i.pravatar.cc/80?img=15', city: 'Hamburg', country: 'Germany', languages: ['Korean', 'English', 'German'] }),
-];
 
 let activeDoctors = FALLBACK_DOCTORS;
 let selectedSpecialistId = null;
@@ -469,8 +385,6 @@ function doctorCardHTML(doc) {
     doc.available || doc.is_available
       ? '<span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600" data-i18n="consult.availableNow">Available now</span>'
       : '<span class="w-2 h-2 bg-slate-300 rounded-full"></span><span class="text-xs text-slate-500" data-i18n="consult.unavailable">Unavailable</span>';
-  var imgSrc =
-    doc.img || doc.image_url || 'https://i.pravatar.cc/80?img=' + encodeURIComponent(doc.id + 10);
   var exp = doc.experience || '';
   var locBits = '';
   if (doc.city || doc.country) locBits += ' · ' + [doc.city, doc.country].filter(Boolean).join(', ');
@@ -485,24 +399,24 @@ function doctorCardHTML(doc) {
       '<p class="text-[11px] text-on-surface-variant mt-0.5 truncate" title="' +
       escapeAttr(labels.join(', ')) +
       '">' +
-      labels.join(', ') +
+      escapeAttr(labels.join(', ')) +
       '</p>';
   var book = localizedBookBtn(),
     msg = localizedMessageBtn();
   return `
   <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="${doc.specialtySlug}">
-    <img src="${imgSrc}" alt="" class="w-14 h-14 rounded-2xl object-cover"/>
+    ${doctorAvatarHTML(doc)}
     <div class="flex-1">
       <div class="flex justify-between">
-        <p class="font-semibold text-sm">${doc.name}</p>
+        <p class="font-semibold text-sm">${escapeAttr(doc.name)}</p>
         <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">${doc.rating}</span></div>
       </div>
-      <p class="text-xs text-on-surface-variant">${doc.specialty}${locBits}${exp ? ' · ' + exp : ''}</p>
+      <p class="text-xs text-on-surface-variant">${escapeAttr(doc.specialty + locBits + (exp ? ' · ' + exp : ''))}</p>
       ${langBits}
       <div class="flex items-center gap-1 mt-1">${availLabel}</div>
       <div class="flex gap-2 mt-3">
-        <button onclick="showBookModal('${escapeJsQuoted(doc.name)}','${escapeJsQuoted(doc.specialty)}',${doc.id})" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">${book}</button>
-        <button onclick="showChatModal('${escapeJsQuoted(doc.name)}')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">${msg}</button>
+        <button onclick="showBookModal('${escapeAttr(escapeJsQuoted(doc.name))}','${escapeAttr(escapeJsQuoted(doc.specialty))}',${Number(doc.id)})" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">${book}</button>
+        <button onclick="showChatModal('${escapeAttr(escapeJsQuoted(doc.name))}')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">${msg}</button>
       </div>
     </div>
   </div>`;
@@ -573,23 +487,60 @@ function syncConsultFilterOptionLabels() {
 async function loadSpecialists() {
   var data = await getSpecialists();
   if (data && Array.isArray(data) && data.length) {
-    activeDoctors = data.map(function (d) {
-      return normalizeDoctorRecord(
-        {
-          id: d.id,
-          name: d.name,
-          specialty: d.specialty,
-          is_available: d.is_available,
-          languages: d.languages,
-          location: d.location,
-          img: null,
-          rating: '4.8',
-        },
-        true,
-      );
-    });
+    activeDoctors = data.map(doctorFromApi);
     applyDoctorFilters();
   }
+}
+
+// ---- Hand-off from the symptom check (check.html) -------------------------------
+// check.html leaves { specialistId, specialty, language, reason } in sessionStorage
+// (not localStorage: it describes symptoms and should not outlive the tab).
+var CHECK_HANDOFF_KEY = 'careconnect_check_handoff';
+var checkHandoff = null;
+
+function readCheckHandoff() {
+  try {
+    var raw = sessionStorage.getItem(CHECK_HANDOFF_KEY);
+    sessionStorage.removeItem(CHECK_HANDOFF_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function applyCheckHandoff() {
+  checkHandoff = readCheckHandoff();
+  if (!checkHandoff) return;
+  document.getElementById('checkHandoffNote').classList.remove('hidden');
+  var chip = document.querySelector('.chip-specialty[data-specialty="' + String(checkHandoff.specialty || '').replace(/[^a-z_]/g, '') + '"]');
+  if (chip) {
+    document.querySelectorAll('.chip-specialty').forEach(function (c) { c.classList.remove('chip-active'); });
+    chip.classList.add('chip-active');
+    activeChipSpecialty = chip.getAttribute('data-specialty');
+  }
+  var langEl = document.getElementById('filterConsultLang');
+  if (langEl && checkHandoff.language && langEl.querySelector('option[value="' + String(checkHandoff.language).replace(/[^a-z]/g, '') + '"]'))
+    langEl.value = checkHandoff.language;
+}
+
+// The check's filters are a starting point, not a dead end: if they leave the list
+// empty (e.g. no dermatologist speaks Turkish), widen specialty first, then language.
+function relaxHandoffFilters() {
+  var shown = function () { return document.querySelectorAll('#doctorList .doctor-card').length; };
+  if (!checkHandoff || shown()) return;
+  var all = document.querySelector('.chip-specialty[data-specialty="all"]');
+  if (all) filterDoctorsChip(all);
+  if (shown()) return;
+  document.getElementById('filterConsultLang').value = '';
+  applyDoctorFilters();
+}
+
+function openHandoffBooking() {
+  relaxHandoffFilters();
+  if (!checkHandoff || checkHandoff.specialistId == null) return;
+  var doc = activeDoctors.find(function (d) { return String(d.id) === String(checkHandoff.specialistId); });
+  checkHandoff.specialistId = null; // open once
+  if (doc) showBookModal(doc.name, doc.specialty, doc.id);
 }
 
 function initConsultLocalization() {
@@ -611,11 +562,14 @@ document.addEventListener('DOMContentLoaded', async function () {
   ) {
     langElBoot.value = CarePrefs.getPreferredConsultLanguage() || '';
   }
+  applyCheckHandoff();
+  renderDateButtons();
   applyDoctorFilters();
-  loadSpecialists();
+  loadSpecialists().then(openHandoffBooking);
 
   window.addEventListener('careconnect:locale', function () {
     initConsultLocalization();
+    renderDateButtons();
     applyDoctorFilters();
   });
   window.addEventListener('careconnect:redraw-dynamic', function () {
@@ -637,8 +591,27 @@ function showBookModal(name, specialty, specialistId) {
   selectedSpecialistId = specialistId;
   document.getElementById('bookModalTitle').textContent =
     (typeof CareI18n !== 'undefined' ? CareI18n.t('consult.bookWith') + ' ' : 'Book with ') + name;
-  document.getElementById('bookModalSub').textContent = specialty + ' · Virtual Consultation';
+  document.getElementById('bookModalSub').textContent =
+    specialty + ' · ' + (typeof CareI18n !== 'undefined' ? CareI18n.t('consult.virtualConsultation') : 'Virtual consultation');
   document.getElementById('bookModal').classList.remove('hidden');
+}
+
+// Next five days, labelled in the interface language.
+function renderDateButtons() {
+  var row = document.getElementById('dateButtons');
+  if (!row) return;
+  var locale = typeof CarePrefs !== 'undefined' ? CarePrefs.getLanguage() : 'en';
+  var html = '';
+  for (var i = 1; i <= 5; i++) {
+    var d = new Date();
+    d.setDate(d.getDate() + i);
+    var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    html +=
+      '<button type="button" class="date-btn ' + (i === 1 ? 'bg-primary text-white' : 'bg-surface-container') +
+      ' rounded-xl py-2 text-center" data-date="' + iso + '" onclick="selectDate(this)"><p class="text-xs">' +
+      escapeAttr(d.toLocaleDateString(locale, { weekday: 'short' })) + '</p><p class="font-bold text-sm">' + d.getDate() + '</p></button>';
+  }
+  row.innerHTML = html;
 }
 
 function selectDate(btn) {
@@ -654,25 +627,19 @@ function selectTime(btn) {
 async function confirmBooking() {
   const dateBtn = document.querySelector('.date-btn.bg-primary');
   const timeBtn = document.querySelector('.time-btn.bg-primary');
-  const dateText = dateBtn ? dateBtn.querySelector('p:last-child').textContent : '5';
-  const timeText = timeBtn ? timeBtn.textContent.trim() : '9:00 AM';
-
-  // Build an ISO datetime — use current month/year + selected day
-  const now = new Date();
-  const startTime = new Date(now.getFullYear(), now.getMonth(), parseInt(dateText), 9).toISOString();
+  const [y, m, d] = (dateBtn ? dateBtn.dataset.date : '').split('-').map(Number);
+  const hour = timeBtn ? Number(timeBtn.dataset.hour) : 9;
+  const when = y ? new Date(y, m - 1, d, hour) : new Date(Date.now() + 86400000);
 
   const result = await bookAppointment({
     specialistId: selectedSpecialistId || 1,
-    startTime,
-    reason: 'Consultation via CareConnect',
+    startTime: when.toISOString(),
+    reason: (checkHandoff && checkHandoff.reason) || 'Consultation via CareConnect',
   });
 
   document.getElementById('bookModal').classList.add('hidden');
-  if (result) {
-    alert(`Appointment booked! ID: ${result.id || 'confirmed'}. You will receive a confirmation shortly.`);
-  } else {
-    alert('Appointment request submitted! You will receive a confirmation shortly.');
-  }
+  var t = typeof CareI18n !== 'undefined' ? CareI18n.t.bind(CareI18n) : function (k) { return k; };
+  alert(result ? t('consult.bookingConfirmed') : t('consult.bookingQueued'));
 }
 
 function showChatModal(name) {

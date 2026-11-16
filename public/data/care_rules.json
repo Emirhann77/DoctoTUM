@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "durations": ["today", "days_1_3", "days_4_7", "over_week"],
+  "thresholds": {
+    "urgent_severity": 7,
+    "moderate_severity": 4,
+    "elevated_risk_severity": 5,
+    "senior_age": 65,
+    "child_age": 16,
+    "infant_age": 2
+  },
+  "symptoms": {
+    "fever": { "specialty": "general", "self_care_ok": true, "tips": ["fluids", "rest", "monitor_temp"] },
+    "cough": { "specialty": "general", "self_care_ok": true, "tips": ["fluids", "rest"] },
+    "sore_throat": { "specialty": "general", "self_care_ok": true, "tips": ["warm_drinks", "fluids"] },
+    "headache": { "specialty": "general", "self_care_ok": true, "tips": ["fluids", "dark_room"] },
+    "nausea": { "specialty": "general", "self_care_ok": true, "tips": ["fluids", "bland_food"] },
+    "stomach_pain": { "specialty": "general", "self_care_ok": true, "tips": ["bland_food"] },
+    "fatigue": { "specialty": "general", "self_care_ok": true, "tips": ["rest", "sleep_routine"] },
+    "back_pain": { "specialty": "general", "self_care_ok": true, "tips": ["gentle_movement"] },
+    "joint_pain": { "specialty": "general", "self_care_ok": true, "tips": ["gentle_movement"] },
+    "dizziness": { "specialty": "general", "self_care_ok": false, "tips": ["sit_down", "fluids"] },
+    "ear_pain": { "specialty": "general", "self_care_ok": false, "tips": [] },
+    "rash": { "specialty": "dermatology", "self_care_ok": false, "tips": ["avoid_scratching"] },
+    "itching": { "specialty": "dermatology", "self_care_ok": true, "tips": ["avoid_scratching"] },
+    "palpitations": { "specialty": "cardiology", "self_care_ok": false, "tips": ["sit_down"] },
+    "anxiety": { "specialty": "mental_health", "self_care_ok": false, "tips": ["breathing", "talk_to_someone"] },
+    "low_mood": { "specialty": "mental_health", "self_care_ok": false, "tips": ["talk_to_someone", "sleep_routine"] },
+    "insomnia": { "specialty": "mental_health", "self_care_ok": true, "tips": ["sleep_routine"] },
+    "shortness_of_breath": { "specialty": "emergency", "red_flag": true, "tips": [] },
+    "chest_pain": { "specialty": "emergency", "red_flag": true, "tips": [] }
+  }
+}

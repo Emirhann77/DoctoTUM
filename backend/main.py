@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.routes import (
     ai_assistant,
     appointments,
+    care,
     emergency,
     integrations,
     prescriptions,
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
     app.include_router(appointments.router, prefix="/api", tags=["Appointments"])
     app.include_router(emergency.router, prefix="/api", tags=["Emergency"])
     app.include_router(ai_assistant.router, prefix="/api", tags=["AI Assistant"])
+    app.include_router(care.router, prefix="/api", tags=["Care Navigator"])
     app.include_router(prescriptions.router, prefix="/api", tags=["Prescriptions"])
     app.include_router(users.router, prefix="/api", tags=["Users"])
     app.include_router(integrations.router, prefix="/api", tags=["Integrations"])

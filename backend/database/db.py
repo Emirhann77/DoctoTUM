@@ -52,6 +52,30 @@ _SPECIALISTS: List[Specialist] = [
         languages=["English", "German", "Turkish"],
         is_available=True,
     ),
+    Specialist(
+        id=5,
+        name="Dr. Lucía Fernández",
+        specialty="Psychiatry",
+        location="Munich",
+        languages=["Spanish", "English", "German"],
+        is_available=True,
+    ),
+    Specialist(
+        id=6,
+        name="Dr. Camille Laurent",
+        specialty="Pediatrics",
+        location="Garching",
+        languages=["French", "English", "German"],
+        is_available=True,
+    ),
+    Specialist(
+        id=7,
+        name="Dr. Jonas Weber",
+        specialty="General Practitioner",
+        location="Garching",
+        languages=["German", "English"],
+        is_available=True,
+    ),
 ]
 
 _USERS: Dict[int, MockUser] = {
