@@ -132,11 +132,12 @@ def test_cannot_order_against_someone_elses_prescription(client, alice, bob):
     [
         [],
         [{"medication_name": ""}],
+        [{"medication_name": "   "}],
         [{"medication_name": "Ibuprofen", "quantity": 0}],
         [{"medication_name": "Ibuprofen", "quantity": 11}],
         [{"medication_name": "Ibuprofen"}] * 11,
     ],
-    ids=["empty", "blank-name", "zero", "too-many-units", "too-many-items"],
+    ids=["empty", "blank-name", "whitespace-name", "zero", "too-many-units", "too-many-items"],
 )
 def test_order_validation(client, alice, items):
     assert client.post("/api/pharmacy/orders", json={"items": items}, headers=alice).status_code == 422
@@ -194,3 +195,22 @@ def test_chat_is_rate_limited_per_user(client, alice, bob):
 def test_chat_rejects_oversized_messages(client, alice):
     r = client.post("/api/ai_assistant/chat", json={"user_message": "x" * 2001}, headers=alice)
     assert r.status_code == 422
+
+
+# --- plans (simulated billing) ----------------------------------------------
+
+
+def test_choosing_a_plan_is_recorded_and_never_charged(client, alice, bob):
+    assert [p["slug"] for p in client.get("/api/plans", headers=alice).json()] == ["basic", "pro", "family"]
+    assert client.get("/api/plans/current", headers=alice).json() is None
+
+    r = client.post("/api/plans/choose", json={"slug": "pro"}, headers=alice)
+    assert r.status_code == 200
+    assert r.json()["charged"] is False
+    assert client.get("/api/plans/current", headers=alice).json()["slug"] == "pro"
+    assert client.get("/api/plans/current", headers=bob).json() is None
+
+
+@pytest.mark.parametrize("slug,status", [("platinum", 404), ("", 422), ("Pro Plan!", 422)])
+def test_unknown_or_malformed_plan(client, alice, slug, status):
+    assert client.post("/api/plans/choose", json={"slug": slug}, headers=alice).status_code == status

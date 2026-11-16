@@ -11,6 +11,7 @@ from backend.routes import (
     emergency,
     integrations,
     pharmacy,
+    plans,
     prescriptions,
     specialists,
     users,
@@ -71,6 +72,7 @@ def create_app() -> FastAPI:
     app.include_router(care.router, prefix="/api", tags=["Care Navigator"])
     app.include_router(prescriptions.router, prefix="/api", tags=["Prescriptions"])
     app.include_router(pharmacy.router, prefix="/api", tags=["Pharmacy"])
+    app.include_router(plans.router, prefix="/api", tags=["Plans"])
     app.include_router(users.router, prefix="/api", tags=["Users"])
     app.include_router(integrations.router, prefix="/api", tags=["Integrations"])
 

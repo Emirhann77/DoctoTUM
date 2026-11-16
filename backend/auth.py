@@ -6,8 +6,9 @@ Who is calling: the Supabase access token, verified.
   ({SUPABASE_URL}/auth/v1/.well-known/jwks.json), cached for ten minutes.
 - A token is never decoded without verification. If nothing is available to verify
   it against, the request fails with 503 rather than being trusted.
-- With no Supabase settings at all (keyless local development), requests run as a
-  fixed demo user against the in-memory store.
+- Keyless local development must be asked for (CARECONNECT_ALLOW_DEMO_USER=1 and no
+  Supabase settings): requests then run as a fixed demo user on the in-memory store.
+  Without that switch, a backend with nothing to verify against answers 503.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from backend import config
 
 _ASYMMETRIC = ("ES256", "RS256")
 _JWKS_TTL_SECONDS = 600
+_JWKS_MIN_REFRESH_SECONDS = 60  # an unknown key id may trigger a refetch at most this often
 _jwks_lock = threading.Lock()
 _jwks_cache: dict[str, Any] = {"url": None, "fetched": 0.0, "keys": {}}
 
@@ -52,23 +54,27 @@ def _signing_keys(force: bool = False) -> dict[str, dict]:
     if not url:
         return {}
     with _jwks_lock:
-        fresh = (
-            _jwks_cache["url"] == url
-            and time.monotonic() - _jwks_cache["fetched"] < _JWKS_TTL_SECONDS
-        )
-        if fresh and not force:
-            return _jwks_cache["keys"]
-        try:
-            r = httpx.get(f"{url}/auth/v1/.well-known/jwks.json", timeout=10.0)
-            r.raise_for_status()
-            keys = {k["kid"]: k for k in r.json().get("keys", []) if k.get("kid")}
-        except Exception as exc:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Sign-in could not be verified right now. Please try again.",
-            ) from exc
+        same_project = _jwks_cache["url"] == url
+        cached = _jwks_cache["keys"] if same_project else {}
+        age = time.monotonic() - _jwks_cache["fetched"] if same_project else float("inf")
+    max_age = _JWKS_MIN_REFRESH_SECONDS if force else _JWKS_TTL_SECONDS
+    if age < max_age:
+        return cached
+    # Fetched outside the lock: a slow identity server must not stall every request.
+    try:
+        r = httpx.get(f"{url}/auth/v1/.well-known/jwks.json", timeout=10.0)
+        r.raise_for_status()
+        keys = {k["kid"]: k for k in r.json().get("keys", []) if k.get("kid")}
+    except Exception as exc:
+        if cached:
+            return cached  # keep verifying against the last known keys
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Sign-in could not be verified right now. Please try again.",
+        ) from exc
+    with _jwks_lock:
         _jwks_cache.update(url=url, fetched=time.monotonic(), keys=keys)
-        return keys
+    return keys
 
 
 def reset_key_cache() -> None:
@@ -119,8 +125,13 @@ def current_user(authorization: Optional[str] = Header(default=None)) -> Current
         if scheme.lower() == "bearer" and value.strip():
             token = value.strip()
 
-    if not config.auth_required():
+    if config.demo_user_allowed():
         return DEMO_USER
+    if not (config.supabase_url() or config.supabase_jwt_secret()):
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The server is not configured for sign-in.",
+        )
     if not token:
         raise _unauthorized("Sign in to continue")
     claims = verify_token(token)

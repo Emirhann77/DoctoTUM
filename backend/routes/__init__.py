@@ -5,6 +5,7 @@ __all__ = [
     "emergency",
     "ai_assistant",
     "pharmacy",
+    "plans",
     "prescriptions",
     "users",
     "integrations",

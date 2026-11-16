@@ -11,4 +11,5 @@ router = APIRouter()
 
 @router.get("/users/me", response_model=Me)
 def me(user: CurrentUser = Depends(current_user), store: Store = Depends(get_store)):
-    return Me(id=user.id, email=user.email, display_name=store.display_name())
+    name = store.display_name() or (user.email or "").split("@")[0] or None
+    return Me(id=user.id, email=user.email, display_name=name)

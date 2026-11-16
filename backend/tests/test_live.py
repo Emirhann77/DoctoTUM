@@ -181,3 +181,86 @@ def test_patient_cannot_write_prescriptions_or_doctors_directly(patient, admin):
                           params={"id": f"eq.{doctor}"}, json={"display_name": "Hacked"})
     assert renamed.status_code in (200, 204, 401, 403)
     assert renamed.status_code >= 400 or renamed.json() == []
+
+
+def _as_patient(patient):
+    return {**patient, "apikey": ENV["NEXT_PUBLIC_SUPABASE_ANON_KEY"], "Prefer": "return=representation",
+            "Content-Type": "application/json"}
+
+
+def _my_id(patient) -> str:
+    return httpx.get(f"{ENV['SUPABASE_URL']}/auth/v1/user", headers=_as_patient(patient), timeout=20).json()["id"]
+
+
+def test_patient_cannot_promote_themselves(patient, admin):
+    base, me = f"{ENV['SUPABASE_URL']}/rest/v1", _my_id(patient)
+    r = httpx.patch(f"{base}/profiles", headers=_as_patient(patient), timeout=20, params={"id": f"eq.{me}"},
+                    json={"role": "admin", "is_pro_member": True})
+    assert r.status_code in (401, 403)
+    row = admin.get(f"{base}/profiles", params={"id": f"eq.{me}", "select": "role,is_pro_member"}).json()[0]
+    assert row == {"role": "patient", "is_pro_member": False}
+
+    renamed = httpx.patch(f"{base}/profiles", headers=_as_patient(patient), timeout=20, params={"id": f"eq.{me}"},
+                          json={"display_name": "Test Patient"})
+    assert renamed.status_code == 200  # the one thing they may change
+
+
+def test_patient_cannot_grant_themselves_a_plan_directly(patient, admin):
+    base, me = f"{ENV['SUPABASE_URL']}/rest/v1", _my_id(patient)
+    plan = admin.get(f"{base}/plans", params={"slug": "eq.family", "select": "id"}).json()[0]["id"]
+    r = httpx.post(f"{base}/subscriptions", headers=_as_patient(patient), timeout=20,
+                   json={"user_id": me, "plan_id": plan, "status": "active"})
+    assert r.status_code in (401, 403)
+
+
+def test_plan_choice_through_the_api(client, patient, admin):
+    base, me = f"{ENV['SUPABASE_URL']}/rest/v1", _my_id(patient)
+    try:
+        r = client.post("/api/plans/choose", headers=patient, json={"slug": "pro"})
+        assert r.status_code == 200 and r.json()["charged"] is False
+        assert client.get("/api/plans/current", headers=patient).json()["slug"] == "pro"
+        client.post("/api/plans/choose", headers=patient, json={"slug": "basic"})
+        assert client.get("/api/plans/current", headers=patient).json()["slug"] == "basic"
+    finally:
+        admin.delete(f"{base}/subscriptions", params={"user_id": f"eq.{me}"})
+
+
+def test_patient_can_only_cancel_a_booking_in_the_database(client, patient, admin):
+    base = f"{ENV['SUPABASE_URL']}/rest/v1"
+    doctors = client.get("/api/specialists", headers=patient).json()
+    appt = client.post("/api/appointments", headers=patient, json={
+        "specialist_id": doctors[0]["id"], "start_time": _slot(210), "reason": "live test"}).json()
+    try:
+        target = {"id": f"eq.{appt['id']}"}
+        for change in ({"status": "completed"}, {"provider_id": doctors[1]["id"]}, {"started_at": "2026-01-01T00:00:00Z"}):
+            r = httpx.patch(f"{base}/consultations", headers=_as_patient(patient), timeout=20, params=target, json=change)
+            assert r.status_code in (401, 403), change
+        row = admin.get(f"{base}/consultations", params={**target, "select": "status,provider_id,started_at"}).json()[0]
+        assert row == {"status": "queued", "provider_id": doctors[0]["id"], "started_at": None}
+
+        forged = httpx.post(f"{base}/consultations", headers=_as_patient(patient), timeout=20, json={
+            "patient_id": _my_id(patient), "provider_id": doctors[0]["id"], "status": "completed",
+            "scheduled_at": _slot(211)})
+        assert forged.status_code == 201 and forged.json()[0]["status"] == "queued"  # forced back to a plain booking
+        admin.delete(f"{base}/consultations", params={"id": f"eq.{forged.json()[0]['id']}"})
+    finally:
+        client.delete(f"/api/appointments/{appt['id']}", headers=patient)
+        admin.delete(f"{base}/consultations", params={"id": f"eq.{appt['id']}"})
+
+
+def test_order_rules_hold_in_the_database(client, patient, stranger, admin):
+    base = f"{ENV['SUPABASE_URL']}/rest/v1"
+    rx = client.get("/api/prescriptions", headers=patient).json()[0]
+    stranger_id = _my_id(stranger)
+    stolen = httpx.post(f"{base}/pharmacy_orders", headers=_as_patient(stranger), timeout=20, json={
+        "user_id": stranger_id, "medication_name": "x", "prescription_id": rx["id"]})
+    assert stolen.status_code in (401, 403)
+
+    order = client.post("/api/pharmacy/orders", headers=patient,
+                        json={"items": [{"medication_name": rx["medication"], "notes": "live test"}]}).json()[0]
+    try:
+        shipped = httpx.patch(f"{base}/pharmacy_orders", headers=_as_patient(patient), timeout=20,
+                              params={"id": f"eq.{order['id']}"}, json={"status": "shipped"})
+        assert shipped.status_code in (401, 403)
+    finally:
+        admin.delete(f"{base}/pharmacy_orders", params={"id": f"eq.{order['id']}"})

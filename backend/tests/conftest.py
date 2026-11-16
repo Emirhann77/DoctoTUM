@@ -14,7 +14,7 @@ from jose import jwt
 
 from backend import auth
 from backend.main import app
-from backend.services import directory
+from backend.services import billing, directory
 from backend.store import memory
 from backend.utils import rate_limit
 
@@ -24,7 +24,7 @@ BOB = "22222222-2222-4222-8222-222222222222"
 
 _SETTINGS = (
     "SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_JWT_SECRET", "OPENAI_API_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_JWT_SECRET", "OPENAI_API_KEY", "CARECONNECT_ALLOW_DEMO_USER",
 )
 
 
@@ -46,6 +46,7 @@ def clean_environment(monkeypatch):
     monkeypatch.setenv("SUPABASE_JWT_SECRET", TEST_SECRET)
     memory.reset()
     rate_limit.reset()
+    billing.reset()
     directory.reset_cache()
     auth.reset_key_cache()
     yield

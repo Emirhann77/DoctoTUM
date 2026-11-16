@@ -34,9 +34,14 @@ def supabase_configured() -> bool:
     return bool(supabase_url() and supabase_anon_key())
 
 
-def auth_required() -> bool:
-    """Tokens are mandatory as soon as there is anything to verify them against."""
-    return bool(supabase_url() or supabase_jwt_secret())
+def demo_user_allowed() -> bool:
+    """Keyless local development: requests run as one shared demo user.
+
+    Must be switched on explicitly (CARECONNECT_ALLOW_DEMO_USER=1) and is ignored as
+    soon as there is anything to verify tokens against, so a deployment whose
+    settings failed to load refuses requests instead of serving everyone as one user.
+    """
+    return _env("CARECONNECT_ALLOW_DEMO_USER") == "1" and not (supabase_url() or supabase_jwt_secret())
 
 
 def openai_key() -> str:

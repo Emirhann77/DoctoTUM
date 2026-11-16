@@ -3,7 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List, Literal, Optional
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StringConstraints, model_validator
+from typing_extensions import Annotated
+
+MedicationName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
 
 # ---------------------------------------------------------------------------
 # Doctors
@@ -59,7 +62,7 @@ class Prescription(BaseModel):
 
 
 class PharmacyOrderItem(BaseModel):
-    medication_name: str = Field(..., min_length=1, max_length=120)
+    medication_name: MedicationName
     prescription_id: Optional[str] = Field(default=None, max_length=64)
     quantity: int = Field(default=1, ge=1, le=10)
     notes: Optional[str] = Field(default=None, max_length=300)
@@ -192,3 +195,24 @@ class Me(BaseModel):
     id: str
     email: Optional[str] = None
     display_name: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Plans (simulated billing)
+# ---------------------------------------------------------------------------
+
+
+class Plan(BaseModel):
+    slug: str
+    name: str
+    price_cents_monthly: int
+    features: List[str] = Field(default_factory=list)
+
+
+class PlanChooseRequest(BaseModel):
+    slug: str = Field(..., pattern=r"^[a-z0-9_-]{1,40}$")
+
+
+class PlanChoice(BaseModel):
+    plan: Plan
+    charged: bool = False

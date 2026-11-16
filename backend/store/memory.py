@@ -96,7 +96,8 @@ class MemoryStore:
 
     # --- prescriptions and orders ---
     def list_prescriptions(self) -> list[Prescription]:
-        return sorted(_prescriptions.get(self.user_id, {}).values(), key=lambda p: p.created_at, reverse=True)
+        mine = (p for p in _prescriptions.get(self.user_id, {}).values() if p.status != "cancelled")
+        return sorted(mine, key=lambda p: p.created_at, reverse=True)
 
     def list_orders(self) -> list[PharmacyOrder]:
         return sorted(_orders.get(self.user_id, {}).values(), key=lambda o: o.created_at, reverse=True)
@@ -133,11 +134,11 @@ class MemoryStore:
 
     def end_alert(self, alert_id: str) -> EmergencyAlert:
         alert = _alerts.get(self.user_id, {}).get(alert_id)
-        if not alert:
+        if not alert or alert.status != "active":
             raise NotFound("Alert not found.")
         updated = alert.model_copy(update={"status": "cancelled"})
         _alerts[self.user_id][alert_id] = updated
         return updated
 
     def display_name(self) -> Optional[str]:
-        return (self.email or "").split("@")[0] or None
+        return None

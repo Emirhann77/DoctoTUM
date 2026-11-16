@@ -20,6 +20,7 @@ from backend.store import memory
 from backend.store.base import Unavailable
 
 _TTL_SECONDS = 60
+_RETRY_AFTER_ERROR_SECONDS = 5
 _lock = threading.Lock()
 _cache: dict = {"at": 0.0, "url": None, "items": None}
 
@@ -70,12 +71,23 @@ def _fetch() -> list[Specialist]:
 def list_specialists() -> list[Specialist]:
     if not uses_supabase():
         return list(memory.SPECIALISTS)
+    url = config.supabase_url()
     with _lock:
-        fresh = _cache["items"] is not None and _cache["url"] == config.supabase_url() \
-            and time.monotonic() - _cache["at"] < _TTL_SECONDS
-        if not fresh:
-            _cache.update(items=_fetch(), url=config.supabase_url(), at=time.monotonic())
-        return list(_cache["items"])
+        cached = _cache["items"] if _cache["url"] == url else None
+        if cached is not None and time.monotonic() - _cache["at"] < _TTL_SECONDS:
+            return list(cached)
+    # The network call happens outside the lock so readers never queue behind it.
+    try:
+        items = _fetch()
+    except Unavailable:
+        if cached is not None:
+            with _lock:  # keep serving the last good list; try again shortly
+                _cache["at"] = time.monotonic() - _TTL_SECONDS + _RETRY_AFTER_ERROR_SECONDS
+            return list(cached)
+        raise
+    with _lock:
+        _cache.update(items=items, url=url, at=time.monotonic())
+    return list(items)
 
 
 def get_specialist(specialist_id: str) -> Optional[Specialist]:

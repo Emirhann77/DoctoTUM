@@ -16,6 +16,6 @@ def get_store(user: CurrentUser = Depends(current_user)) -> Store:
     """FastAPI dependency: the signed-in user's view of the data."""
     if config.supabase_configured() and user.token:
         return SupabaseStore(user.id, user.token)
-    if user == DEMO_USER:
+    if user is DEMO_USER:
         memory.seed_demo_user(user.id)
     return MemoryStore(user.id, user.email)

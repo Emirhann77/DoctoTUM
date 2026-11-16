@@ -15,6 +15,9 @@ _hits: dict[tuple[str, str], deque] = defaultdict(deque)
 def check(user_id: str, bucket: str, limit: int, window_seconds: int) -> None:
     now = time.monotonic()
     with _lock:
+        if len(_hits) > 10_000:  # drop idle users so the table cannot grow without bound
+            for key in [k for k, v in _hits.items() if not v or now - v[-1] > window_seconds]:
+                del _hits[key]
         q = _hits[(bucket, user_id)]
         while q and now - q[0] > window_seconds:
             q.popleft()

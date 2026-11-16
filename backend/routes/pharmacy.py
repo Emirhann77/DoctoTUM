@@ -15,8 +15,6 @@ def list_orders(store: Store = Depends(get_store)):
 
 @router.post("/pharmacy/orders", response_model=list[PharmacyOrder], status_code=201)
 def create_orders(body: PharmacyOrderCreateRequest, store: Store = Depends(get_store)):
-    for item in body.items:
-        item.medication_name = item.medication_name.strip()
     return store.create_orders(body.items)
 
 

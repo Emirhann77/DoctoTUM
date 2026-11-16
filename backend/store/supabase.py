@@ -12,6 +12,7 @@ from typing import Any, Optional
 from uuid import UUID
 
 import httpx
+from fastapi import HTTPException
 
 from backend import config
 from backend.models.schemas import (
@@ -32,12 +33,13 @@ _ORDER_COLS = "id,medication_name,quantity,status,prescription_id,notes,created_
 _ALERT_COLS = "id,status,created_at"
 
 
-def is_uuid(value: str) -> bool:
+def canonical_uuid(value: object) -> Optional[str]:
+    """Lower-case hyphenated form, or None if it is not a UUID. Ids are compared as
+    strings with what the database returns, so they are normalised once, here."""
     try:
-        UUID(str(value))
-        return True
+        return str(UUID(str(value)))
     except (ValueError, AttributeError, TypeError):
-        return False
+        return None
 
 
 def _appointment(row: dict) -> Appointment:
@@ -48,7 +50,7 @@ def _appointment(row: dict) -> Appointment:
         specialist_name=provider.get("display_name"),
         specialty=provider.get("specialty"),
         start_time=row["scheduled_at"],
-        status="cancelled" if row.get("status") == "cancelled" else "booked",
+        status="booked" if row.get("status") == "queued" else row.get("status") or "booked",
         reason=row.get("reason"),
     )
 
@@ -89,22 +91,41 @@ class SupabaseStore:
             headers["Prefer"] = "return=representation"
         try:
             r = _client.request(method, f"{self._base}/{table}", params=params, json=json, headers=headers)
-        except httpx.HTTPError as exc:
+        except (httpx.HTTPError, httpx.InvalidURL) as exc:
             raise Unavailable() from exc
-        if r.status_code >= 500:
+        if r.status_code >= 500 or r.status_code == 429:
             raise Unavailable()
         if r.status_code >= 400:
-            try:
-                code = r.json().get("code")
-            except ValueError:
-                code = None
-            if code == "23505":
-                raise Conflict()
-            if r.status_code in (401, 403) or code == "42501":
-                # The token was accepted by us but refused by the database: treat as not theirs.
-                raise NotFound()
-            raise StoreError("The request could not be completed.")
-        return r.json() if r.content else []
+            raise self._error(r)
+        if not r.content:
+            return []
+        try:
+            body = r.json()
+        except ValueError as exc:
+            raise Unavailable() from exc
+        return body if isinstance(body, list) else [body]
+
+    @staticmethod
+    def _error(r: httpx.Response) -> Exception:
+        """PostgREST / Postgres error -> the exception the routes understand."""
+        try:
+            body = r.json()
+        except ValueError:
+            body = None
+        code = body.get("code") if isinstance(body, dict) else None
+        if r.status_code == 401 or (code or "").startswith("PGRST3"):
+            # We verified the token but the database no longer accepts it (expired mid-request).
+            return HTTPException(status_code=401, detail="Sign in to continue",
+                                 headers={"WWW-Authenticate": "Bearer"})
+        if code == "23505":
+            return Conflict()
+        if code == "23503":  # a row this one points at is gone
+            return NotFound()
+        if code == "42501" or r.status_code == 403:  # row-level security said no
+            return NotFound()
+        if code in ("23514", "23502", "22P02", "22007", "22008") or r.status_code == 400:
+            return HTTPException(status_code=422, detail="That request is not valid.")
+        return StoreError("The request could not be completed.")
 
     # --- appointments ---
     def list_appointments(self) -> list[Appointment]:
@@ -112,8 +133,8 @@ class SupabaseStore:
             "select": _APPOINTMENT_COLS,
             "patient_id": f"eq.{self.user_id}",
             "scheduled_at": "not.is.null",
-            "status": "neq.cancelled",
-            "order": "scheduled_at.asc",
+            "status": "eq.queued",
+            "order": "scheduled_at.asc,id.asc",
         })
         return [_appointment(r) for r in rows]
 
@@ -134,11 +155,12 @@ class SupabaseStore:
         return _appointment(rows[0])
 
     def cancel_appointment(self, appointment_id: str) -> None:
-        if not is_uuid(appointment_id):
+        appointment_id = canonical_uuid(appointment_id)
+        if not appointment_id:
             raise NotFound("Appointment not found.")
         rows = self._request(
             "PATCH", "consultations", returning=True, json={"status": "cancelled"},
-            params={"id": f"eq.{appointment_id}", "patient_id": f"eq.{self.user_id}", "status": "neq.cancelled", "select": "id"},
+            params={"id": f"eq.{appointment_id}", "patient_id": f"eq.{self.user_id}", "status": "eq.queued", "select": "id"},
         )
         if not rows:
             raise NotFound("Appointment not found.")
@@ -148,22 +170,23 @@ class SupabaseStore:
         rows = self._request("GET", "prescriptions", params={
             "select": _PRESCRIPTION_COLS,
             "patient_id": f"eq.{self.user_id}",
-            "status": "neq.cancelled",
-            "order": "created_at.desc",
+            "status": "in.(pending,issued,filled)",
+            "order": "created_at.desc,id.asc",
         })
         return [_prescription(r) for r in rows]
 
     def list_orders(self) -> list[PharmacyOrder]:
         rows = self._request("GET", "pharmacy_orders", params={
-            "select": _ORDER_COLS, "user_id": f"eq.{self.user_id}", "order": "created_at.desc",
+            "select": _ORDER_COLS, "user_id": f"eq.{self.user_id}", "order": "created_at.desc,id.asc",
         })
         return [_order(r) for r in rows]
 
     def create_orders(self, items: list[PharmacyOrderItem]) -> list[PharmacyOrder]:
-        rx_ids = {i.prescription_id for i in items if i.prescription_id}
+        rx_by_item = [canonical_uuid(i.prescription_id) if i.prescription_id else None for i in items]
+        if any(i.prescription_id and not rx for i, rx in zip(items, rx_by_item)):
+            raise NotFound("Prescription not found.")
+        rx_ids = {rx for rx in rx_by_item if rx}
         if rx_ids:
-            if not all(is_uuid(i) for i in rx_ids):
-                raise NotFound("Prescription not found.")
             found = self._request("GET", "prescriptions", params={
                 "select": "id", "id": f"in.({','.join(sorted(rx_ids))})", "patient_id": f"eq.{self.user_id}",
             })
@@ -176,16 +199,17 @@ class SupabaseStore:
                     "user_id": self.user_id,
                     "medication_name": i.medication_name,
                     "quantity": i.quantity,
-                    "prescription_id": i.prescription_id,
+                    "prescription_id": rx,
                     "notes": i.notes,
                 }
-                for i in items
+                for i, rx in zip(items, rx_by_item)
             ],
         )
         return [_order(r) for r in rows]
 
     def cancel_order(self, order_id: str) -> PharmacyOrder:
-        if not is_uuid(order_id):
+        order_id = canonical_uuid(order_id)
+        if not order_id:
             raise NotFound("Order not found.")
         mine = {"id": f"eq.{order_id}", "user_id": f"eq.{self.user_id}", "select": _ORDER_COLS}
         rows = self._request(
@@ -207,12 +231,13 @@ class SupabaseStore:
         return _alert(rows[0])
 
     def end_alert(self, alert_id: str) -> EmergencyAlert:
-        if not is_uuid(alert_id):
+        alert_id = canonical_uuid(alert_id)
+        if not alert_id:
             raise NotFound("Alert not found.")
         rows = self._request(
             "PATCH", "emergency_alerts", returning=True,
             json={"status": "cancelled", "ended_at": datetime.now(tz=timezone.utc).isoformat()},
-            params={"id": f"eq.{alert_id}", "user_id": f"eq.{self.user_id}", "select": _ALERT_COLS},
+            params={"id": f"eq.{alert_id}", "user_id": f"eq.{self.user_id}", "status": "eq.active", "select": _ALERT_COLS},
         )
         if not rows:
             raise NotFound("Alert not found.")
