@@ -1,0 +1,8 @@
+{
+  "appId": "io.doctotum.careconnect",
+  "appName": "CareConnect",
+  "webDir": "public",
+  "ios": {
+    "contentInset": "always"
+  }
+}

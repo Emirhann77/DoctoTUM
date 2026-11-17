@@ -71,3 +71,25 @@ test('every page serves supabase-js and tailwind from public/vendor, never from 
   }
   assert.deepEqual(failures, []);
 });
+
+test('capacitor shell is configured for the iOS app', () => {
+  const cfg = JSON.parse(readFileSync(new URL('../capacitor.config.json', import.meta.url), 'utf8'));
+  assert.equal(cfg.appId, 'io.doctotum.careconnect');
+  assert.equal(cfg.appName, 'CareConnect');
+  assert.equal(cfg.webDir, 'public');
+  assert.equal(cfg.ios.contentInset, 'always');
+});
+
+test('iOS Info.plist declares no non-exempt encryption and the display name', () => {
+  const plist = readFileSync(new URL('../ios/App/App/Info.plist', import.meta.url), 'utf8');
+  assert.match(plist, /<key>ITSAppUsesNonExemptEncryption<\/key>\s*<false\/>/);
+  assert.match(plist, /<key>CFBundleDisplayName<\/key>\s*<string>CareConnect<\/string>/);
+});
+
+test('codemagic workflow guards the App Store app id placeholder', () => {
+  const yml = readFileSync(new URL('../codemagic.yaml', import.meta.url), 'utf8');
+  assert.match(yml, /ios-testflight:/);
+  assert.match(yml, /bundle_identifier: io\.doctotum\.careconnect/);
+  assert.match(yml, /0000000000/);
+  assert.match(yml, /xcode-project build-ipa --project ios\/App\/App\.xcodeproj --scheme App/);
+});

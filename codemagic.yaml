@@ -1,0 +1,54 @@
+# CareConnect iOS -> TestFlight (manual builds only).
+#
+# One-time setup (done by a person, not by this repo):
+#   1. Enrol in the Apple Developer Program (individual).
+#   2. In App Store Connect, register the bundle ID io.doctotum.careconnect and create the
+#      app record. If the name "CareConnect" is taken, pick another (only the store name changes).
+#      Copy the app's Apple ID number into APP_STORE_APP_ID below.
+#   3. App Store Connect -> Users and Access -> Integrations: create a Team API key with
+#      the App Manager role.
+#   4. In Codemagic: sign up with GitHub, add this repo, and add the API key under
+#      Team integrations -> Developer Portal with the name "careconnect_asc".
+#   Then start the "ios-testflight" workflow by hand.
+
+workflows:
+  ios-testflight:
+    name: iOS TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: careconnect_asc
+    environment:
+      xcode: latest
+      node: 22
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: io.doctotum.careconnect
+      vars:
+        # TODO: App Store Connect -> App Information -> Apple ID
+        APP_STORE_APP_ID: "0000000000"
+    triggering:
+      events: []
+    scripts:
+      - name: Install dependencies
+        script: npm ci
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Set up code signing
+        script: xcode-project use-profiles
+      - name: Set build number from TestFlight
+        script: |
+          if [ -z "$APP_STORE_APP_ID" ] || [ "$APP_STORE_APP_ID" = "0000000000" ]; then
+            echo "ERROR: APP_STORE_APP_ID is still the placeholder. Set it in codemagic.yaml to the Apple ID from App Store Connect -> App Information." >&2
+            exit 1
+          fi
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID")
+          cd ios/App && agvtool new-version -all $((LATEST + 1))
+      - name: Build ipa
+        script: xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
