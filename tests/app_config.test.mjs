@@ -92,4 +92,9 @@ test('codemagic workflow guards the App Store app id placeholder', () => {
   assert.match(yml, /bundle_identifier: io\.doctotum\.careconnect/);
   assert.match(yml, /0000000000/);
   assert.match(yml, /xcode-project build-ipa --project ios\/App\/App\.xcodeproj --scheme App/);
+  assert.match(yml, /submit_to_testflight: true/);
+  assert.match(yml, /app_store_connect: careconnect_asc/);
+  assert.match(yml, /= "0000000000" \]; then[\s\S]*?exit 1/);
+  assert.match(yml, /\|\| echo 0\)/);
+  assert.doesNotMatch(yml, /^\s*triggering:/m);
 });
