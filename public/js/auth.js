@@ -57,7 +57,7 @@ async function signUp(email, password, fullName) {
     password,
     options: {
       data: { full_name: fullName },
-      emailRedirectTo: `${location.origin}/verify.html`,
+      emailRedirectTo: `${(window.CARE_CONFIG && window.CARE_CONFIG.webOrigin) || location.origin}/verify.html`,
     },
   });
   return { data, error };
@@ -81,7 +81,7 @@ async function signOut() {
 async function sendPasswordReset(email) {
   const client = getSupabase();
   const { error } = await client.auth.resetPasswordForEmail(email, {
-    redirectTo: `${location.origin}/reset-password.html`,
+    redirectTo: `${(window.CARE_CONFIG && window.CARE_CONFIG.webOrigin) || location.origin}/reset-password.html`,
   });
   return { error };
 }
