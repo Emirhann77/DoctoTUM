@@ -50,3 +50,24 @@ test('every page loads config.js before auth.js and api.js', () => {
     if (api !== -1) assert.ok(cfg < api, `${f}: config.js must precede api.js`);
   }
 });
+
+test('every page serves supabase-js and tailwind from public/vendor, never from a CDN', () => {
+  const dir = new URL('../public/', import.meta.url);
+  const pages = readdirSync(dir).filter((f) => f.endsWith('.html'));
+  assert.ok(pages.length >= 11);
+  const plain = new Set(['login.html', 'signup.html', 'verify.html', 'reset-password.html']);
+  const failures = [];
+  for (const page of pages) {
+    const html = readFileSync(new URL(page, dir), 'utf8');
+    const srcs = [...html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map((m) => m[1]);
+    const remote = srcs.filter((s) => /^https?:/i.test(s));
+    if (remote.length) failures.push(`${page}: remote script ${remote.join(', ')}`);
+    const sb = srcs.indexOf('vendor/supabase-js.umd.js');
+    const cfg = srcs.indexOf('js/config.js');
+    if (sb === -1 || cfg === -1 || sb > cfg) failures.push(`${page}: vendor/supabase-js.umd.js must load before js/config.js`);
+    const tw = srcs.filter((s) => s === 'vendor/tailwind-play.js' || s === 'vendor/tailwind-play-forms-cq.js');
+    const want = plain.has(page) ? 'vendor/tailwind-play.js' : 'vendor/tailwind-play-forms-cq.js';
+    if (tw.length !== 1 || tw[0] !== want) failures.push(`${page}: expected exactly ${want}, got ${tw.join(', ') || 'none'}`);
+  }
+  assert.deepEqual(failures, []);
+});
