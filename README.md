@@ -26,13 +26,16 @@ pip install -r backend/requirements-dev.txt
 npm run backend:dev                         # http://localhost:8000/docs
 ```
 
-The UI works without the backend: every page falls back to demo data.
+Apply the SQL files in `supabase/migrations/` (in filename order) to your Supabase project, then create a test account with `python -m backend.scripts.seed_demo`.
+
+Payments, video calls and emergency dispatch are not connected; see `docs/HANDOVER.md` for what is real and what is simulated.
 
 ## Test
 
 ```bash
-npm test                # browser-side triage logic (Node)
-npm run backend:test    # API, triage rules, emergency screening (pytest)
+npm test                # browser-side triage logic and translation completeness (Node)
+npm run backend:test    # API, auth, triage rules, emergency screening (pytest)
+RUN_LIVE=1 python -m pytest backend/tests/test_live.py   # against the real Supabase project
 npm run lint
 ```
 
