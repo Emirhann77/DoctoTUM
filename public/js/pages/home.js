@@ -1,7 +1,7 @@
 // index.html — the signed-in person's own appointments, medications and orders.
 // Vitals, health score and lab results on this page are sample data and are labelled so.
 
-var homeData = { appointments: null, prescriptions: null, orders: null, plan: null, failed: null };
+var homeData = { appointments: null, prescriptions: null, orders: null, plan: null, appointmentsError: null, prescriptionsError: null };
 
 function initialsOf(name) {
   return String(name || '').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase() || '?';
@@ -22,7 +22,7 @@ function renderHomeHeader(session) {
 
 function renderNextAppointment() {
   var box = document.getElementById('nextAppointment');
-  if (homeData.failed) return void (box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(homeData.failed)));
+  if (homeData.appointmentsError) return void (box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(homeData.appointmentsError)));
   if (!homeData.appointments) return void (box.innerHTML = stateBlockHTML('hourglass_empty', careT('common.loading', null, 'Loading...')));
   var next = upcoming(homeData.appointments)[0];
   if (!next) {
@@ -45,7 +45,7 @@ function renderNextAppointment() {
 
 function renderMeds() {
   var box = document.getElementById('medsToday');
-  if (homeData.failed) return void (box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(homeData.failed)));
+  if (homeData.prescriptionsError) return void (box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(homeData.prescriptionsError)));
   if (!homeData.prescriptions) return void (box.innerHTML = stateBlockHTML('hourglass_empty', careT('common.loading', null, 'Loading...')));
   if (!homeData.prescriptions.length)
     return void (box.innerHTML = stateBlockHTML('medication', careT('home.noMedications', null, 'No active prescriptions.')));
@@ -96,7 +96,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   window.addEventListener('careconnect:redraw-dynamic', function () { renderHome(session); });
 
   var results = await Promise.all([listAppointments(), listPrescriptions(), listOrders(), getCurrentPlan()]);
-  homeData.failed = results.slice(0, 3).find(function (r) { return !r.ok; }) || null;
+  homeData.appointmentsError = results[0].ok ? null : results[0];
+  homeData.prescriptionsError = results[1].ok ? null : results[1];
   homeData.appointments = results[0].ok ? results[0].data : null;
   homeData.prescriptions = results[1].ok ? results[1].data : null;
   homeData.orders = results[2].ok ? results[2].data : null;

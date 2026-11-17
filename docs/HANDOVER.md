@@ -25,9 +25,27 @@ Checked in a browser at phone size, signed in as the test account, in English an
 | Pharmacy: own prescriptions, refill and medication requests, order list, cancel | works |
 | Profile: details, conditions, allergies saved and read back; age and conditions pre-fill the symptom check | works |
 | SOS: hold → alert saved → "Call 112" button; contacts add/remove; Medical ID from the profile | works |
+| SOS while signed out: button, call screen and phone numbers still work | works |
 | Plans: choice saved, shown on profile and home | works (no payment) |
 
-Automated: 181 backend tests, 29 browser-logic tests, and 13 opt-in tests that run against the live project (`RUN_LIVE=1 python -m pytest backend/tests/test_live.py`), including that a second user cannot read or change the first user's data.
+Automated: 199 backend tests, 34 browser-logic tests, and 13 opt-in tests that run against the live project (`RUN_LIVE=1 python -m pytest backend/tests/test_live.py`), including that a second user cannot read or change the first user's data.
+
+## Reviews run overnight and what they changed
+
+- **Security** (ECC): database rules let an owner rewrite their own role, plan, bookings and orders through the database API. Closed in `20261118100000_harden_rls.sql`; demo mode made opt-in; unknown signing-key ids can no longer force a key refetch per request.
+- **Backend correctness** (ECC): database errors were surfacing as the wrong status (an expired token as "not found", a missing row as a server error). Mapped properly; the doctor list keeps serving the last good copy during an outage.
+- **Clinical safety** (ECC):
+  - an expired login could navigate away from the Call 112 screen; SOS calls no longer sign anyone out
+  - the SOS page was behind login; it now works signed out
+  - "I can’t breathe" typed with a phone's curly apostrophe was not recognised as an emergency; fixed in both the backend and the browser
+  - "overdose", "unconscious", "not breathing", "seizure" and "want to die" added to the emergency phrases
+  - emergency messages now carry a direct Call 112 button instead of sending people to another page
+  - a result that points at mental health shows 112 and 116 123
+  - "drink plenty of water" is withheld when a long-term condition is on record; self-care tips and over-the-counter items carry a caveat
+  - removing an allergy asks for confirmation
+- **Standards and plan conformance** (Matt Pocock code review): per-card error states on home, demo doctors labelled when the directory is unreachable, plan buttons translated, unused API wrappers removed.
+
+Left as they are, by choice: some duplicated helpers across page scripts (loading/empty/error blocks, initials), `'/mo'` and unit suffixes not translated, and the orders page does not check a request against the allergies in the profile.
 
 ## What is simulated or missing
 
@@ -38,6 +56,7 @@ Automated: 181 backend tests, 29 browser-logic tests, and 13 opt-in tests that r
 - **Vitals, health score, lab results.** Still illustrative numbers, now labelled "Sample data".
 - **AI assistant.** Not verified live: the OpenAI key in `.env.local` returned "no credits remaining" on the first call. The app falls back to built-in replies and now says so in the chat. Add credits and it switches over with no code change.
 - **Sign-up by email.** Not exercised: it sends a real confirmation email, and Supabase's built-in mailer allows only a few per hour. The form is unchanged from before; the database trigger that creates the profile on sign-up is verified (it ran for the test account).
+- **The expired-login case on SOS** is fixed in code and covered by reading, not reproduced in a browser (it needs a token to expire mid-session).
 - **Deployment.** Nothing was deployed. `http://localhost:8000` is still the API address the pages use by default.
 
 ## Decisions made without you

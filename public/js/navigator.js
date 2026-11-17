@@ -29,7 +29,7 @@
   function evaluate(rules, input, emergencyCheck) {
     var catalog = rules.symptoms;
     var th = rules.thresholds;
-    var slugs = unique(input.symptoms || []);
+    var slugs = unique((input.symptoms || []).map(function (s) { return String(s).trim(); }));
     var known = slugs.filter(function (s) { return Object.prototype.hasOwnProperty.call(catalog, s); });
     var hasUnknown = known.length !== slugs.length;
     var conditions = (input.known_conditions || []).filter(function (c) { return c && String(c).trim(); });
@@ -67,9 +67,13 @@
     else if (routine.length) { urgency = 'routine'; reasons = routine; }
     else { urgency = 'self_care'; reasons = ['mild_short']; }
 
+    // Mirrors care_navigator.py: with a long-term condition some tips are left to the clinician.
+    var withheld = conditions.length ? (rules.tips_withheld_with_conditions || []) : [];
     var tips = [];
     known.forEach(function (s) {
-      (catalog[s].tips || []).forEach(function (t) { if (tips.indexOf(t) === -1) tips.push(t); });
+      (catalog[s].tips || []).forEach(function (t) {
+        if (tips.indexOf(t) === -1 && withheld.indexOf(t) === -1) tips.push(t);
+      });
     });
 
     return result(urgency, pickSpecialty(known, catalog, age, th), reasons, [], tips.slice(0, 4));
@@ -164,7 +168,7 @@
     return local;
   }
 
-  var api = { evaluate: evaluate, rank: rank, loadRules: loadRules, navigate: navigate };
+  var api = { evaluate: evaluate, evaluateWithoutRules: evaluateWithoutRules, rank: rank, loadRules: loadRules, navigate: navigate };
   global.CareNavigator = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

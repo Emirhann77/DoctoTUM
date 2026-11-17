@@ -42,7 +42,8 @@ def _openai_chat_completion(user_message: str, language: Optional[str] = None) -
                             "content": (
                                 "You are a cautious medical triage assistant for a telehealth app. "
                                 "Do not diagnose. Give short, clear guidance. "
-                                "If symptoms sound severe or emergency-like, tell the user to seek urgent care."
+                                "If symptoms sound severe or emergency-like, tell the user to seek urgent care. "
+                                "The user is in Germany/the EU: the emergency number is 112 (never say 911)."
                                 + (
                                     f" Reply in {_REPLY_LANGUAGES[language]}."
                                     if language in _REPLY_LANGUAGES

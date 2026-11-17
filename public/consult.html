@@ -110,6 +110,7 @@ tailwind.config = {
       <h2 class="font-semibold text-on-surface" data-i18n="consult.availableDoctors">Available Doctors</h2>
       <span class="text-xs text-on-surface-variant" id="doctorCount" data-i18n="consult.availableCount" data-i18n-count="0"></span>
     </div>
+    <p id="demoDoctorsNote" class="hidden text-xs font-medium bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-2 mb-3" role="status" data-i18n="consult.demoDoctors">The doctor directory is unreachable. These are example doctors and cannot be booked right now.</p>
     <div class="space-y-3" id="doctorList"></div>
   </div>
 
@@ -145,7 +146,7 @@ tailwind.config = {
 </main>
 
 <!-- Book Modal -->
-<div id="bookModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+<div id="bookModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end justify-center">
   <div class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
     <div class="flex justify-between items-center">
       <h2 class="font-bold text-lg" id="bookModalTitle" data-i18n="consult.bookAppointment">Book Appointment</h2>
@@ -176,7 +177,7 @@ tailwind.config = {
 </div>
 
 <!-- Chat Modal -->
-<div id="chatModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+<div id="chatModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end justify-center">
   <div class="bg-white rounded-t-3xl w-full max-w-lg flex flex-col" style="height:85vh">
     <div class="flex justify-between items-center p-4 border-b border-slate-100">
       <div class="flex items-center gap-3">
@@ -361,6 +362,7 @@ async function loadSpecialists() {
     doctorsAreLive = true;
     applyDoctorFilters();
   }
+  document.getElementById('demoDoctorsNote').classList.toggle('hidden', doctorsAreLive);
 }
 
 // ---- My appointments ---------------------------------------------------------------
@@ -611,7 +613,8 @@ async function sendMsg() {
     msgs.insertAdjacentHTML('beforeend',
       '<div class="flex gap-2" role="alert"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-1 shrink-0"><span class="material-symbols-outlined text-red-500 text-sm" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">emergency</span></div>' +
       '<div class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm text-red-700 font-semibold">' + escapeHtml(t('consult.urgentTitle')) + '</p>' +
-      '<p class="text-xs text-red-600 mt-1">' + escapeHtml(t('consult.urgentDetail')) + '<a href="sos.html" class="underline font-semibold">' + escapeHtml(t('consult.sosLink')) + '</a>' + escapeHtml(t('consult.immediately')) + '</p></div></div>');
+      '<p class="text-xs text-red-700 mt-1">' + escapeHtml(t('consult.urgentCall')) + '</p>' +
+      '<a href="tel:112" class="inline-flex items-center gap-1 mt-2 bg-error text-white text-xs font-bold px-4 py-2 rounded-full"><span class="material-symbols-outlined text-sm" aria-hidden="true">call</span>' + escapeHtml(t('emergency.call112')) + '</a></div></div>');
     msgs.scrollTop = msgs.scrollHeight;
     return;
   }
@@ -633,7 +636,7 @@ async function sendMsg() {
   if (result.source !== 'openai' && result.recommendation !== 'emergency')
     html += '<p class="text-[11px] text-on-surface-variant mt-1">' + escapeHtml(careT('consult.builtInReply', null, 'Standard reply (the AI model is not available right now).')) + '</p>';
   if (result.recommendation === 'emergency')
-    html += '<a href="sos.html" class="block mt-2 text-xs font-semibold text-error underline">' + escapeHtml(t('consult.sosLink')) + '</a>';
+    html += '<a href="tel:112" class="inline-flex items-center gap-1 mt-2 bg-error text-white text-xs font-bold px-4 py-2 rounded-full"><span class="material-symbols-outlined text-sm" aria-hidden="true">call</span>' + escapeHtml(t('emergency.call112')) + '</a>';
   add(html, false);
 }
 </script>

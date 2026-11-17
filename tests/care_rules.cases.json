@@ -1,25 +1,373 @@
 [
-  { "name": "mild short cough is self-care", "input": { "symptoms": ["cough"], "severity": 2, "duration": "days_1_3", "age": 24 }, "urgency": "self_care", "specialty": "general" },
-  { "name": "chest pain chip is an emergency", "input": { "symptoms": ["chest_pain"], "severity": 1, "duration": "today", "age": 24 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "shortness of breath chip is an emergency", "input": { "symptoms": ["cough", "shortness_of_breath"], "severity": 3, "duration": "today", "age": 30 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "emergency phrase in free text wins over mild chips", "input": { "symptoms": ["headache"], "description": "my face drooping since morning", "severity": 2, "duration": "today", "age": 40 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "German emergency phrase", "input": { "symptoms": [], "description": "Ich habe starke Brustschmerzen", "severity": 5, "duration": "today", "age": 40 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "Turkish emergency phrase", "input": { "symptoms": [], "description": "nefes alamıyorum", "severity": 5, "duration": "today", "age": 22 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "Spanish emergency phrase", "input": { "symptoms": [], "description": "tengo dolor en el pecho", "severity": 5, "duration": "today", "age": 22 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "French emergency phrase", "input": { "symptoms": [], "description": "j'ai du mal à respirer", "severity": 5, "duration": "today", "age": 22 }, "urgency": "emergency", "specialty": "emergency" },
-  { "name": "high severity is urgent", "input": { "symptoms": ["headache"], "severity": 8, "duration": "today", "age": 30 }, "urgency": "urgent", "specialty": "general" },
-  { "name": "infant fever is urgent and paediatric", "input": { "symptoms": ["fever"], "severity": 2, "duration": "today", "age": 1 }, "urgency": "urgent", "specialty": "pediatrics" },
-  { "name": "prolonged fever is urgent", "input": { "symptoms": ["fever"], "severity": 3, "duration": "days_4_7", "age": 30 }, "urgency": "urgent", "specialty": "general" },
-  { "name": "senior with moderate symptoms is urgent", "input": { "symptoms": ["dizziness"], "severity": 5, "duration": "today", "age": 70 }, "urgency": "urgent", "specialty": "general" },
-  { "name": "known condition with moderate symptoms is urgent", "input": { "symptoms": ["cough"], "severity": 5, "duration": "days_1_3", "age": 30, "known_conditions": ["asthma"] }, "urgency": "urgent", "specialty": "general" },
-  { "name": "moderate severity is routine", "input": { "symptoms": ["sore_throat"], "severity": 5, "duration": "days_1_3", "age": 30 }, "urgency": "routine", "specialty": "general" },
-  { "name": "mild but persistent is routine", "input": { "symptoms": ["cough"], "severity": 2, "duration": "over_week", "age": 30 }, "urgency": "routine", "specialty": "general" },
-  { "name": "mild rash still needs a look", "input": { "symptoms": ["rash"], "severity": 2, "duration": "today", "age": 30 }, "urgency": "routine", "specialty": "dermatology" },
-  { "name": "low mood routes to mental health", "input": { "symptoms": ["low_mood", "insomnia"], "severity": 4, "duration": "over_week", "age": 23 }, "urgency": "routine", "specialty": "mental_health" },
-  { "name": "palpitations route to cardiology", "input": { "symptoms": ["palpitations"], "severity": 3, "duration": "today", "age": 35 }, "urgency": "routine", "specialty": "cardiology" },
-  { "name": "free text only is never self-care", "input": { "symptoms": [], "description": "something feels off", "severity": 1, "duration": "today", "age": 30 }, "urgency": "routine", "specialty": "general" },
-  { "name": "unknown symptom slug is never self-care", "input": { "symptoms": ["not_a_symptom"], "severity": 1, "duration": "today", "age": 30 }, "urgency": "routine", "specialty": "general" },
-  { "name": "mild symptoms in a senior are routine, not self-care", "input": { "symptoms": ["cough"], "severity": 2, "duration": "today", "age": 80 }, "urgency": "routine", "specialty": "general" },
-  { "name": "child routes to paediatrics", "input": { "symptoms": ["sore_throat"], "severity": 5, "duration": "days_1_3", "age": 8 }, "urgency": "routine", "specialty": "pediatrics" },
-  { "name": "tie between specialties falls back to general", "input": { "symptoms": ["rash", "palpitations"], "severity": 4, "duration": "today", "age": 30 }, "urgency": "routine", "specialty": "general" }
+  {
+    "name": "mild short cough is self-care",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "severity": 2,
+      "duration": "days_1_3",
+      "age": 24
+    },
+    "urgency": "self_care",
+    "specialty": "general"
+  },
+  {
+    "name": "chest pain chip is an emergency",
+    "input": {
+      "symptoms": [
+        "chest_pain"
+      ],
+      "severity": 1,
+      "duration": "today",
+      "age": 24
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "shortness of breath chip is an emergency",
+    "input": {
+      "symptoms": [
+        "cough",
+        "shortness_of_breath"
+      ],
+      "severity": 3,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "emergency phrase in free text wins over mild chips",
+    "input": {
+      "symptoms": [
+        "headache"
+      ],
+      "description": "my face drooping since morning",
+      "severity": 2,
+      "duration": "today",
+      "age": 40
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "German emergency phrase",
+    "input": {
+      "symptoms": [],
+      "description": "Ich habe starke Brustschmerzen",
+      "severity": 5,
+      "duration": "today",
+      "age": 40
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "Turkish emergency phrase",
+    "input": {
+      "symptoms": [],
+      "description": "nefes alamıyorum",
+      "severity": 5,
+      "duration": "today",
+      "age": 22
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "Spanish emergency phrase",
+    "input": {
+      "symptoms": [],
+      "description": "tengo dolor en el pecho",
+      "severity": 5,
+      "duration": "today",
+      "age": 22
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "French emergency phrase",
+    "input": {
+      "symptoms": [],
+      "description": "j'ai du mal à respirer",
+      "severity": 5,
+      "duration": "today",
+      "age": 22
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "high severity is urgent",
+    "input": {
+      "symptoms": [
+        "headache"
+      ],
+      "severity": 8,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "urgent",
+    "specialty": "general"
+  },
+  {
+    "name": "infant fever is urgent and paediatric",
+    "input": {
+      "symptoms": [
+        "fever"
+      ],
+      "severity": 2,
+      "duration": "today",
+      "age": 1
+    },
+    "urgency": "urgent",
+    "specialty": "pediatrics"
+  },
+  {
+    "name": "prolonged fever is urgent",
+    "input": {
+      "symptoms": [
+        "fever"
+      ],
+      "severity": 3,
+      "duration": "days_4_7",
+      "age": 30
+    },
+    "urgency": "urgent",
+    "specialty": "general"
+  },
+  {
+    "name": "senior with moderate symptoms is urgent",
+    "input": {
+      "symptoms": [
+        "dizziness"
+      ],
+      "severity": 5,
+      "duration": "today",
+      "age": 70
+    },
+    "urgency": "urgent",
+    "specialty": "general"
+  },
+  {
+    "name": "known condition with moderate symptoms is urgent",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "severity": 5,
+      "duration": "days_1_3",
+      "age": 30,
+      "known_conditions": [
+        "asthma"
+      ]
+    },
+    "urgency": "urgent",
+    "specialty": "general"
+  },
+  {
+    "name": "moderate severity is routine",
+    "input": {
+      "symptoms": [
+        "sore_throat"
+      ],
+      "severity": 5,
+      "duration": "days_1_3",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "mild but persistent is routine",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "severity": 2,
+      "duration": "over_week",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "mild rash still needs a look",
+    "input": {
+      "symptoms": [
+        "rash"
+      ],
+      "severity": 2,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "dermatology"
+  },
+  {
+    "name": "low mood routes to mental health",
+    "input": {
+      "symptoms": [
+        "low_mood",
+        "insomnia"
+      ],
+      "severity": 4,
+      "duration": "over_week",
+      "age": 23
+    },
+    "urgency": "routine",
+    "specialty": "mental_health"
+  },
+  {
+    "name": "palpitations route to cardiology",
+    "input": {
+      "symptoms": [
+        "palpitations"
+      ],
+      "severity": 3,
+      "duration": "today",
+      "age": 35
+    },
+    "urgency": "routine",
+    "specialty": "cardiology"
+  },
+  {
+    "name": "free text only is never self-care",
+    "input": {
+      "symptoms": [],
+      "description": "something feels off",
+      "severity": 1,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "unknown symptom slug is never self-care",
+    "input": {
+      "symptoms": [
+        "not_a_symptom"
+      ],
+      "severity": 1,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "mild symptoms in a senior are routine, not self-care",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "severity": 2,
+      "duration": "today",
+      "age": 80
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "child routes to paediatrics",
+    "input": {
+      "symptoms": [
+        "sore_throat"
+      ],
+      "severity": 5,
+      "duration": "days_1_3",
+      "age": 8
+    },
+    "urgency": "routine",
+    "specialty": "pediatrics"
+  },
+  {
+    "name": "tie between specialties falls back to general",
+    "input": {
+      "symptoms": [
+        "rash",
+        "palpitations"
+      ],
+      "severity": 4,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "routine",
+    "specialty": "general"
+  },
+  {
+    "name": "curly apostrophe still matches an emergency phrase",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "description": "I can’t breathe",
+      "severity": 2,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "overdose in free text is an emergency",
+    "input": {
+      "symptoms": [],
+      "description": "I took 30 sleeping pills, an overdose",
+      "severity": 3,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "unconscious in free text is an emergency",
+    "input": {
+      "symptoms": [],
+      "description": "he is unconscious",
+      "severity": 3,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "symptom names are trimmed",
+    "input": {
+      "symptoms": [
+        " chest_pain "
+      ],
+      "severity": 1,
+      "duration": "today",
+      "age": 30
+    },
+    "urgency": "emergency",
+    "specialty": "emergency"
+  },
+  {
+    "name": "fluids tip is withheld when a condition is on record",
+    "input": {
+      "symptoms": [
+        "cough"
+      ],
+      "severity": 2,
+      "duration": "today",
+      "age": 30,
+      "known_conditions": [
+        "heart failure"
+      ]
+    },
+    "urgency": "routine",
+    "specialty": "general",
+    "tips_exclude": [
+      "fluids"
+    ]
+  }
 ]

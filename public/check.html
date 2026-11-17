@@ -99,7 +99,7 @@ tailwind.config = {
       <span class="material-symbols-outlined text-error mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">emergency</span>
       <div class="flex-1">
         <p class="text-sm font-semibold text-on-error-container" data-i18n="check.liveEmergency">This can be an emergency. Do not finish this form - get help now.</p>
-        <a href="sos.html" class="cta inline-block mt-3 bg-error text-white text-sm font-semibold px-5 py-2.5 rounded-full" data-i18n="check.openSos">Open SOS</a>
+        <a href="tel:112" class="cta inline-flex items-center gap-2 mt-3 bg-error text-white text-sm font-bold px-5 py-2.5 rounded-full"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1" aria-hidden="true">call</span><span data-i18n="emergency.call112">Call 112</span></a>
       </div>
     </div>
   </div>
@@ -306,6 +306,12 @@ async function onNext() {
       preferred_consult_language: CarePrefs.getPreferredConsultLanguage(),
       location: CarePrefs.getLocation(),
     });
+  } catch (err) {
+    console.warn('[check] navigation failed', err && err.message);
+    result = CareNavigator.evaluateWithoutRules(input, checkEmergencySymptoms);
+    result.match_language = '';
+    result.matches = [];
+    result.source = 'local';
   } finally {
     btn.disabled = false;
   }
@@ -369,7 +375,8 @@ function renderResult() {
         '<h1 tabindex="-1" class="text-xl font-bold focus:outline-none ' + style.title + '">' + esc(t('check.urgency.' + r.urgency + '.title')) + '</h1>' +
         '<p class="text-sm text-on-surface mt-1">' + esc(t('check.urgency.' + r.urgency + '.body')) + '</p>' +
         (emergency
-          ? '<a href="sos.html" class="cta inline-block mt-4 bg-error text-white font-semibold px-6 py-3 rounded-full">' + esc(t('check.openSos')) + '</a>'
+          ? '<a href="tel:112" class="cta inline-flex items-center gap-2 mt-4 bg-error text-white font-bold px-6 py-3 rounded-full"><span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">call</span>' + esc(t('emergency.call112')) + '</a>' +
+            '<a href="sos.html" class="block mt-3 text-sm underline text-on-error-container">' + esc(t('check.openSos')) + '</a>'
           : '<p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant mt-3">' + esc(t('check.recommended', { specialty: specialtyLabel(r.specialty_slug) })) + '</p>') +
       '</div>' +
     '</div></div>';
@@ -390,7 +397,13 @@ function renderResult() {
       (cards ? '<div class="space-y-3">' + cards + '</div>' : '<p class="text-sm text-on-surface-variant">' + esc(t('check.noMatches')) + '</p>') +
     '</div>';
 
+    if (r.specialty_slug === 'mental_health')
+      html += '<p class="text-sm bg-surface-container rounded-2xl px-4 py-3">' + esc(t('check.crisisLine')) +
+        ' <a href="tel:112" class="font-semibold underline">112</a> · <a href="tel:116123" class="font-semibold underline">116 123</a></p>';
+
     html += listHTML('check.tipsTitle', r.self_care.map(function (code) { return t('check.tips.' + code); }));
+    if (r.self_care.length)
+      html += '<p class="text-xs text-on-surface-variant">' + esc(t('check.tipsCaveat')) + '</p>';
   }
 
   if (r.source === 'local')

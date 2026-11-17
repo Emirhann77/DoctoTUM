@@ -8,6 +8,7 @@ const API_BASE = (typeof window !== 'undefined' && window.CARE_API_BASE) || 'htt
 // Every call resolves to { ok, status, data, error }:
 //   status 0   -> the backend could not be reached (pages may fall back or say so)
 //   status 401 -> the session is no longer valid; the user is sent to login
+//                 (unless options.keepPage is set: the SOS screen must never navigate away)
 //   other 4xx  -> the request was refused; `error` is a message that can be shown
 async function apiCall(path, options = {}) {
   let authHeader = {};
@@ -16,10 +17,11 @@ async function apiCall(path, options = {}) {
     if (token) authHeader = { Authorization: `Bearer ${token}` };
   }
 
+  const { keepPage, ...fetchOptions } = options;
   let res;
   try {
     res = await fetch(`${API_BASE}${path}`, {
-      ...options,
+      ...fetchOptions,
       headers: { 'Content-Type': 'application/json', ...authHeader, ...(options.headers || {}) },
     });
   } catch (err) {
@@ -32,7 +34,7 @@ async function apiCall(path, options = {}) {
 
   if (res.status === 401) {
     console.warn(`[api] ${path} -> 401, signing out`);
-    if (typeof signOut === 'function') signOut();
+    if (!keepPage && typeof signOut === 'function') signOut();
     return { ok: false, status: 401, data: null, error: 'unauthorized' };
   }
   if (!res.ok) {
@@ -54,20 +56,10 @@ function postJson(body) {
   return { method: 'POST', body: JSON.stringify(body) };
 }
 
-// ---------- Me ----------
-
-async function getMe() {
-  return apiFetch('/api/users/me');
-}
-
 // ---------- Specialists ----------
 
 async function getSpecialists() {
   return apiFetch('/api/specialists');
-}
-
-async function getAvailableSpecialists() {
-  return apiFetch('/api/specialists/available');
 }
 
 // ---------- Appointments ----------
@@ -75,10 +67,6 @@ async function getAvailableSpecialists() {
 // -> apiCall result; data is a list of { id, specialist_id, specialist_name, specialty, start_time, status, reason }
 async function listAppointments() {
   return apiCall('/api/appointments');
-}
-
-async function getAppointments() {
-  return apiFetch('/api/appointments');
 }
 
 // -> apiCall result (409 = already booked at that time, 422 = invalid time)
@@ -164,11 +152,11 @@ async function startEmergency(payload = {}) {
     const loc = CarePrefs.getLocationForPayload && CarePrefs.getLocationForPayload();
     if (loc) body.location = loc;
   }
-  return apiCall('/api/emergency/start', postJson(body));
+  return apiCall('/api/emergency/start', { ...postJson(body), keepPage: true });
 }
 
 async function endEmergency(alertId) {
-  return apiCall('/api/emergency/end', postJson({ alert_id: alertId }));
+  return apiCall('/api/emergency/end', { ...postJson({ alert_id: alertId }), keepPage: true });
 }
 
 // ---------- Prescriptions & pharmacy ----------
@@ -176,10 +164,6 @@ async function endEmergency(alertId) {
 // Read-only: prescriptions are issued by a doctor.
 async function listPrescriptions() {
   return apiCall('/api/prescriptions');
-}
-
-async function getPrescriptions() {
-  return apiFetch('/api/prescriptions');
 }
 
 async function listOrders() {
@@ -196,10 +180,6 @@ async function cancelOrder(orderId) {
 }
 
 // ---------- Plans (simulated: nothing is charged) ----------
-
-async function listPlans() {
-  return apiCall('/api/plans');
-}
 
 async function getCurrentPlan() {
   return apiCall('/api/plans/current');
@@ -235,6 +215,12 @@ const EMERGENCY_PHRASES = [
   "anaphylaxis",
   "swelling of the tongue",
   "swelling of the throat",
+  "unconscious",
+  "not breathing",
+  "stopped breathing",
+  "seizure",
+  "overdose",
+  "want to die",
   "suicid",
   "brustschmerz",
   "druck auf der brust",
@@ -247,6 +233,8 @@ const EMERGENCY_PHRASES = [
   "selbstmord",
   "mich umbringen",
   "anaphylaxie",
+  "überdosis",
+  "krampfanfall",
   "göğüs ağrısı",
   "göğsümde ağrı",
   "nefes alamıyorum",
@@ -258,6 +246,7 @@ const EMERGENCY_PHRASES = [
   "intihar",
   "kendimi öldür",
   "anafilaksi",
+  "aşırı doz",
   "dolor en el pecho",
   "dolor de pecho",
   "no puedo respirar",
@@ -269,6 +258,8 @@ const EMERGENCY_PHRASES = [
   "sangrado abundante",
   "hemorragia grave",
   "anafilaxia",
+  "sobredosis",
+  "convulsiones",
   "douleur thoracique",
   "douleur à la poitrine",
   "douleur dans la poitrine",
@@ -280,12 +271,15 @@ const EMERGENCY_PHRASES = [
   "saignement abondant",
   "hémorragie",
   "choc anaphylactique",
+  "surdose",
+  "convulsions",
 ];
 
 // Turkish I/ı/İ do not round-trip through toLowerCase(); fold them so text typed
 // in capitals still matches. Mirrors fold() in backend/utils/safety.py.
 function foldForMatch(text) {
-  return String(text || '').toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i');
+  return String(text || '').toLowerCase().replace(/i̇/g, 'i').replace(/ı/g, 'i')
+    .replace(/[‘’ʼ`´]/g, "'"); // curly apostrophes from phone keyboards
 }
 
 function checkEmergencySymptoms(text) {

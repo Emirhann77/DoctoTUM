@@ -1,6 +1,7 @@
 {
   "version": 1,
   "durations": ["today", "days_1_3", "days_4_7", "over_week"],
+  "tips_withheld_with_conditions": ["fluids"],
   "thresholds": {
     "urgent_severity": 7,
     "moderate_severity": 4,

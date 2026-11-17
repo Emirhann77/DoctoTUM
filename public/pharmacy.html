@@ -68,7 +68,8 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
 
   <!-- OTC Medications -->
   <div>
-    <h2 class="font-semibold text-on-surface mb-3">Over-the-Counter</h2>
+    <h2 class="font-semibold text-on-surface mb-1" data-i18n="pharmacy.otcTitle">Over-the-counter</h2>
+    <p class="text-xs text-on-surface-variant mb-3" data-i18n="pharmacy.otcNote">Read the leaflet. Ask a pharmacist first if you are pregnant, have kidney, stomach or heart problems, take blood thinners, or have allergies.</p>
     <div class="grid grid-cols-2 gap-3" id="otcList">
       <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
         <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-3">
@@ -108,7 +109,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
 </main>
 
 <!-- Medication request -->
-<div id="newRxModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+<div id="newRxModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end justify-center">
   <form id="requestForm" class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
     <div class="flex justify-between items-center">
       <h2 class="font-bold text-lg" data-i18n="pharmacy.requestMedication">Request a medication</h2>

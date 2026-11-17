@@ -57,7 +57,8 @@ function renderCart() {
 
 function addToCart(item) {
   var same = pharmacy.cart.find(function (i) { return i.medication_name === item.medication_name && i.prescription_id === item.prescription_id; });
-  if (same) same.quantity = Math.min(10, same.quantity + 1);
+  // Without a prescription, at most two packs per request.
+  if (same) same.quantity = Math.min(item.prescription_id ? 10 : 2, same.quantity + 1);
   else pharmacy.cart.push({ medication_name: item.medication_name, prescription_id: item.prescription_id || null, quantity: 1 });
   renderCart();
 }

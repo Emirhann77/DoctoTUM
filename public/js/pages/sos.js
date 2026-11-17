@@ -5,7 +5,7 @@
 // in front of them. Nothing on this page may say or imply that help has been sent.
 
 var HOLD_SECONDS = 3;
-var sos = { timer: null, alertId: null, contacts: null, contactsError: false, profile: null };
+var sos = { timer: null, alertId: null, contacts: null, contactsError: false, profile: null, signedIn: false };
 
 function sosStatus(text) { document.getElementById('sosStatus').textContent = text; }
 function idleText() { return careT('emergency.sosStatusIdle', null, 'Hold the button, then call 112'); }
@@ -38,8 +38,13 @@ async function triggerEmergency() {
   document.getElementById('sosOverlay').classList.remove('hidden');
   document.getElementById('sosCallBtn').focus();
 
+  if (!sos.signedIn) return; // nothing to save the alert to; the call button is already on screen
   var result = await startEmergency({ symptoms: 'SOS button' });
   if (result.ok) {
+    if (document.getElementById('sosOverlay').classList.contains('hidden')) {
+      // They closed the screen before the save finished: close the alert too, do not leave it active.
+      return void endEmergency(result.data.alert_id);
+    }
     sos.alertId = result.data.alert_id;
     document.getElementById('sosLogNote').textContent = careT('emergency.logged', null, 'This alert was saved to your account.');
   } else {
@@ -114,14 +119,18 @@ async function addContact(event) {
   loadContacts();
 }
 
+async function sessionOrNull() {
+  try { return await getSession(); } catch (e) { return null; }
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
-  var session = await requireAuth();
-  if (!session) return;
+  // No login gate here: the SOS button and the phone numbers must work for anyone,
+  // signed in or not, and even if the sign-in library failed to load. The button is
+  // wired up before anything that touches the network.
   sosStatus(idleText());
-  renderContacts();
   window.addEventListener('careconnect:redraw-dynamic', function () {
     if (!sos.timer) sosStatus(idleText());
-    renderContacts();
+    if (sos.signedIn) renderContacts();
     renderMedicalId();
   });
 
@@ -142,12 +151,23 @@ document.addEventListener('DOMContentLoaded', async function () {
   document.getElementById('contactsList').addEventListener('click', async function (e) {
     var remove = e.target.closest('[data-remove-contact]');
     if (!remove) return;
-    await CareRecords.removeContact(remove.getAttribute('data-remove-contact'));
+    var removed = await CareRecords.removeContact(remove.getAttribute('data-remove-contact'));
+    if (!removed.ok) showToast(careT('common.failed', null, 'That did not work. Please try again.'), 'error');
     loadContacts();
   });
 
+  sos.signedIn = !!(await sessionOrNull());
+  if (!sos.signedIn) {
+    document.getElementById('contactAdd').classList.add('hidden');
+    document.getElementById('contactsList').innerHTML =
+      '<a href="login.html?next=sos.html" class="block px-5 py-4 text-sm text-primary font-medium">' +
+      escapeHtml(careT('emergency.signInForDetails', null, 'Sign in to see your contacts and Medical ID.')) + '</a>';
+    return;
+  }
+  renderContacts();
   loadContacts();
   CareRecords.getProfile().then(function (result) {
     if (result.ok) { sos.profile = result.data; renderMedicalId(); }
+    else document.getElementById('midError').classList.remove('hidden');
   });
 });

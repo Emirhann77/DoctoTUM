@@ -62,7 +62,7 @@ def evaluate(
     catalog: dict[str, dict[str, Any]] = rules["symptoms"]
     th = rules["thresholds"]
 
-    slugs = [s for s in dict.fromkeys(symptoms) if s]
+    slugs = [s for s in dict.fromkeys(str(x).strip() for x in symptoms) if s]
     known = [s for s in slugs if s in catalog]
     has_unknown = len(known) != len(slugs)
     conditions = safety.normalize_conditions(known_conditions)
@@ -110,10 +110,13 @@ def evaluate(
     else:
         urgency, reasons = "self_care", ["mild_short"]
 
+    # "Drink plenty of water" is wrong for some long-term conditions (heart failure,
+    # dialysis); with any condition on record that tip is left to the clinician.
+    withheld = set(rules.get("tips_withheld_with_conditions", [])) if conditions else set()
     tips: list[str] = []
     for s in known:
         for tip in catalog[s].get("tips", []):
-            if tip not in tips:
+            if tip not in tips and tip not in withheld:
                 tips.append(tip)
 
     return _result(urgency, _pick_specialty(known, catalog, age, th), reasons, [], tips[:4])

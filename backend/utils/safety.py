@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
@@ -34,6 +35,12 @@ _EMERGENCY_PHRASES: tuple[str, ...] = (
     "anaphylaxis",
     "swelling of the tongue",
     "swelling of the throat",
+    "unconscious",
+    "not breathing",
+    "stopped breathing",
+    "seizure",
+    "overdose",
+    "want to die",
     # --- Multilingual (the UI ships en/de/tr/es/fr; people describe emergencies
     # in their own language). All lowercase. Mirrored in public/js/api.js.
     "suicid",  # suicide / Suizid / suicidio / suicidaire
@@ -49,6 +56,8 @@ _EMERGENCY_PHRASES: tuple[str, ...] = (
     "selbstmord",
     "mich umbringen",
     "anaphylaxie",
+    "überdosis",
+    "krampfanfall",
     # Turkish
     "göğüs ağrısı",
     "göğsümde ağrı",
@@ -61,6 +70,7 @@ _EMERGENCY_PHRASES: tuple[str, ...] = (
     "intihar",
     "kendimi öldür",
     "anafilaksi",
+    "aşırı doz",
     # Spanish
     "dolor en el pecho",
     "dolor de pecho",
@@ -73,6 +83,8 @@ _EMERGENCY_PHRASES: tuple[str, ...] = (
     "sangrado abundante",
     "hemorragia grave",
     "anafilaxia",
+    "sobredosis",
+    "convulsiones",
     # French
     "douleur thoracique",
     "douleur à la poitrine",
@@ -85,6 +97,8 @@ _EMERGENCY_PHRASES: tuple[str, ...] = (
     "saignement abondant",
     "hémorragie",
     "choc anaphylactique",
+    "surdose",
+    "convulsions",
 )
 
 
@@ -92,10 +106,15 @@ def emergency_phrases() -> tuple[str, ...]:
     return _EMERGENCY_PHRASES
 
 
+_APOSTROPHES = re.compile("[\u2018\u2019\u02bc\u0060\u00b4]")
+
+
 def fold(text: str) -> str:
     """Case-fold for matching. Turkish I/ı/İ do not round-trip through lower(), so
     "GÖĞÜS AĞRISI" would otherwise miss "göğüs ağrısı". Mirrored in public/js/api.js."""
-    return text.lower().replace("i̇", "i").replace("ı", "i")
+    folded = text.lower().replace("i\u0307", "i").replace("\u0131", "i")
+    # Phone keyboards type a curly apostrophe; it must still match the plain one.
+    return _APOSTROPHES.sub("'", folded)
 
 
 def check_emergency_symptoms(text: Optional[str]) -> SafetyResult:

@@ -135,7 +135,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   });
   document.getElementById('allergiesList').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-remove-allergy]');
-    if (btn) removeItem(CareRecords.removeAllergy, btn.getAttribute('data-remove-allergy'));
+    // An allergy list is safety information: never remove one on a stray tap.
+    if (btn && confirm(btn.getAttribute('aria-label') + '?')) removeItem(CareRecords.removeAllergy, btn.getAttribute('data-remove-allergy'));
   });
 
   loadProfile();

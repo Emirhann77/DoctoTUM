@@ -21,10 +21,11 @@ function setBilling(type) {
 function markCurrentPlan() {
   document.querySelectorAll('[data-plan]').forEach(function (btn) {
     var isCurrent = btn.dataset.plan === currentPlanSlug;
-    if (!btn.dataset.label) btn.dataset.label = btn.textContent.trim();
     btn.disabled = isCurrent;
     btn.classList.toggle('opacity-60', isCurrent);
-    btn.textContent = isCurrent ? careT('plans.current', null, 'Your current plan') : btn.dataset.label;
+    btn.textContent = isCurrent
+      ? careT('plans.current', null, 'Your current plan')
+      : careT(btn.dataset.plan === 'pro' ? 'plans.upgradePro' : 'plans.select', null, 'Select plan');
   });
 }
 

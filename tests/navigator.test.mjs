@@ -30,6 +30,7 @@ for (const c of cases) {
     const out = evaluate(rules, c.input, checkEmergencySymptoms);
     assert.equal(out.urgency, c.urgency);
     assert.equal(out.specialty_slug, c.specialty);
+    for (const tip of c.tips_exclude || []) assert.ok(!out.self_care.includes(tip), tip);
   });
 }
 

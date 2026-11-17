@@ -49,6 +49,7 @@ def test_shared_case(case):
     out = care_navigator.evaluate(**case["input"])
     assert out["urgency"] == case["urgency"]
     assert out["specialty_slug"] == case["specialty"]
+    assert not set(case.get("tips_exclude", [])) & set(out["self_care"])
 
 
 # --- safety: a missed emergency is the failure that matters ------------------
