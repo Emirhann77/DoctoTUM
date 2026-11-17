@@ -18,6 +18,8 @@ services:
         value: gpt-4o-mini
       - key: SUPABASE_URL
         sync: false
+      # Value = NEXT_PUBLIC_SUPABASE_ANON_KEY from .env.local (the public anon key also in public/js/auth.js).
+      # Left empty, the API silently runs on the in-memory store; check /api/integrations/status after deploy.
       - key: SUPABASE_ANON_KEY
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
@@ -30,7 +32,6 @@ services:
   - type: web
     name: careconnect-web
     runtime: static
-    region: frankfurt
     buildCommand: echo static
     staticPublishPath: public
     headers:
