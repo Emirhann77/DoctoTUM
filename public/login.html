@@ -166,8 +166,9 @@ async function handleLogin(e) {
   }
 
   // Redirect to originally requested page or home
-  const next = new URLSearchParams(location.search).get('next') || 'index.html';
-  window.location.href = next;
+  // Only ever to one of our own pages: `?next=https://elsewhere` or `javascript:` must not work.
+  const next = new URLSearchParams(location.search).get('next') || '';
+  window.location.href = /^[a-z0-9-]+\.html$/i.test(next) ? next : 'index.html';
 }
 
 function showForgotPassword() {

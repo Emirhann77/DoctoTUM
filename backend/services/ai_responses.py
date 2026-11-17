@@ -4,6 +4,7 @@ AI assistant: uses OpenAI when OPENAI_API_KEY is set; otherwise deterministic mo
 
 from __future__ import annotations
 
+import logging
 import os
 import random
 import re
@@ -13,6 +14,8 @@ import httpx
 
 from backend.models.schemas import AIChatResponse, TriageResponse
 from backend.utils import safety
+
+log = logging.getLogger("careconnect.ai")
 
 
 _REPLY_LANGUAGES = {"en": "English", "de": "German", "tr": "Turkish", "es": "Spanish", "fr": "French"}
@@ -56,7 +59,16 @@ def _openai_chat_completion(user_message: str, language: Optional[str] = None) -
             r.raise_for_status()
             data = r.json()
             return data["choices"][0]["message"]["content"].strip()
-    except Exception:
+    except httpx.HTTPStatusError as exc:
+        # Not swallowed silently: an exhausted or invalid key should be visible to whoever runs the server.
+        try:
+            code = (exc.response.json().get("error") or {}).get("code")
+        except ValueError:
+            code = None
+        log.warning("OpenAI request failed: HTTP %s %s; using the built-in reply", exc.response.status_code, code or "")
+        return None
+    except Exception as exc:
+        log.warning("OpenAI request failed: %s; using the built-in reply", type(exc).__name__)
         return None
 
 
@@ -133,7 +145,7 @@ def chat(user_message: str, language: Optional[str] = None) -> AIChatResponse:
         else:
             risk = "low"
             rec = "self_monitor"
-        return AIChatResponse(risk_level=risk, message=live, recommendation=rec)
+        return AIChatResponse(risk_level=risk, message=live, recommendation=rec, source="openai")
     return _mock_chat_reply(user_message)
 
 

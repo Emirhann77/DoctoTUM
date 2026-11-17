@@ -127,6 +127,8 @@ class AIChatResponse(BaseModel):
     risk_level: str = Field(..., description="low | medium | high")
     message: str
     recommendation: str = Field(..., description="book_appointment | emergency | self_monitor")
+    # "rules" = a built-in reply (no model was used: emergency screening, or the model was unavailable)
+    source: str = Field(default="rules", description="openai | rules")
 
 
 class TriageRequest(BaseModel):

@@ -99,6 +99,7 @@
           medium: "Medium risk",
           high: "High risk",
         },
+        builtInReply: "Standard reply (the AI model is not available right now).",
       },
       emergency: {
         header: "Emergency SOS",
@@ -430,6 +431,7 @@
           medium: "Mittleres Risiko",
           high: "Hohes Risiko",
         },
+        builtInReply: "Standardantwort (das KI-Modell ist derzeit nicht verfügbar).",
       },
       emergency: {
         header: "Notfall SOS",
@@ -761,6 +763,7 @@
           medium: "Orta risk",
           high: "Yüksek risk",
         },
+        builtInReply: "Standart yanıt (yapay zekâ modeli şu anda kullanılamıyor).",
       },
       emergency: {
         header: "Acil SOS",
@@ -1092,6 +1095,7 @@
           medium: "Riesgo medio",
           high: "Riesgo alto",
         },
+        builtInReply: "Respuesta estándar (el modelo de IA no está disponible ahora).",
       },
       emergency: {
         header: "Emergencia SOS",
@@ -1423,6 +1427,7 @@
           medium: "Risque moyen",
           high: "Risque élevé",
         },
+        builtInReply: "Réponse standard (le modèle d'IA est indisponible pour le moment).",
       },
       emergency: {
         header: "Urgences SOS",

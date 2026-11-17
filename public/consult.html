@@ -630,6 +630,8 @@ async function sendMsg() {
   if (result.risk_level && result.risk_level !== 'low')
     html += '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ' + riskBadgeClass(result.risk_level) + '">' +
       escapeHtml(careT('consult.risk.' + result.risk_level, null, result.risk_level.toUpperCase())) + '</span>';
+  if (result.source !== 'openai' && result.recommendation !== 'emergency')
+    html += '<p class="text-[11px] text-on-surface-variant mt-1">' + escapeHtml(careT('consult.builtInReply', null, 'Standard reply (the AI model is not available right now).')) + '</p>';
   if (result.recommendation === 'emergency')
     html += '<a href="sos.html" class="block mt-2 text-xs font-semibold text-error underline">' + escapeHtml(t('consult.sosLink')) + '</a>';
   add(html, false);
