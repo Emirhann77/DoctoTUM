@@ -1,9 +1,12 @@
 // CareConnect API client — talks to the FastAPI backend (backend/main.py).
-// Set window.CARE_API_BASE before loading this script to override the default.
+// The API base comes from window.CARE_CONFIG.apiBase (js/config.js). To override it, set
+// window.CARE_API_BASE before js/config.js loads.
 //
 // Who the user is travels only in the Authorization header (their Supabase access
 // token). No request carries a user id: the backend derives it from the token.
 const API_BASE = (typeof window !== 'undefined' && ((window.CARE_CONFIG && window.CARE_CONFIG.apiBase) || window.CARE_API_BASE)) || 'http://localhost:8000';
+
+const API_TIMEOUT_MS = 15000;
 
 // Every call resolves to { ok, status, data, error }:
 //   status 0   -> the backend could not be reached (pages may fall back or say so)
@@ -19,14 +22,20 @@ async function apiCall(path, options = {}) {
 
   const { keepPage, ...fetchOptions } = options;
   let res;
+  // AbortController + setTimeout (not AbortSignal.timeout: iOS 15). A timeout reads as unreachable.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   try {
     res = await fetch(`${API_BASE}${path}`, {
       ...fetchOptions,
+      signal: controller.signal,
       headers: { 'Content-Type': 'application/json', ...authHeader, ...(options.headers || {}) },
     });
   } catch (err) {
     console.warn(`[api] ${path} unreachable`, err.message);
     return { ok: false, status: 0, data: null, error: 'unreachable' };
+  } finally {
+    clearTimeout(timer);
   }
 
   let data = null;

@@ -98,3 +98,86 @@ test('codemagic workflow guards the App Store app id placeholder', () => {
   assert.match(yml, /\|\| echo 0\)/);
   assert.doesNotMatch(yml, /^\s*triggering:/m);
 });
+
+// ---- wiring: CARE_CONFIG reaches auth.js and api.js ----
+// auth.js / api.js declare top-level consts, so each scenario gets a fresh vm context.
+import vm from 'node:vm';
+import { mock } from 'node:test';
+
+const readSrc = (p) => readFileSync(new URL('../public/' + p, import.meta.url), 'utf8');
+
+function loadApp({ careConfig, origin = 'http://localhost:3000', fetchImpl } = {}) {
+  const calls = { signUp: null, reset: null, urls: [] };
+  const window = { location: { origin, href: '' } };
+  if (careConfig) window.CARE_CONFIG = careConfig;
+  const sandbox = {
+    window, location: window.location, console,
+    AbortController,
+    setTimeout: (...a) => globalThis.setTimeout(...a),
+    clearTimeout: (...a) => globalThis.clearTimeout(...a),
+    supabase: {
+      createClient: () => ({
+        auth: {
+          signUp: async (arg) => { calls.signUp = arg; return { data: {}, error: null }; },
+          resetPasswordForEmail: async (email, opts) => { calls.reset = opts; return { error: null }; },
+          getSession: async () => ({ data: { session: null } }),
+        },
+      }),
+    },
+    fetch: fetchImpl || (async (url) => { calls.urls.push(url); return { ok: true, status: 200, json: async () => ({}) }; }),
+  };
+  vm.createContext(sandbox);
+  vm.runInContext(readSrc('js/auth.js') + '\n' + readSrc('js/api.js') +
+    '\nthis.signUp = signUp; this.sendPasswordReset = sendPasswordReset; this.apiCall = apiCall;', sandbox);
+  return { sandbox, calls };
+}
+
+test('CARE_CONFIG.webOrigin is used for the signup email link', async () => {
+  const { sandbox, calls } = loadApp({ careConfig: { apiBase: 'https://api.test', webOrigin: 'https://web.test' } });
+  await sandbox.signUp('a@b.c', 'pw', 'A B');
+  assert.equal(calls.signUp.options.emailRedirectTo, 'https://web.test/verify.html');
+});
+
+test('CARE_CONFIG.webOrigin is used for the password reset link', async () => {
+  const { sandbox, calls } = loadApp({ careConfig: { apiBase: 'https://api.test', webOrigin: 'https://web.test' } });
+  await sandbox.sendPasswordReset('a@b.c');
+  assert.equal(calls.reset.redirectTo, 'https://web.test/reset-password.html');
+});
+
+test('CARE_CONFIG.apiBase is the prefix of API requests', async () => {
+  const { sandbox, calls } = loadApp({ careConfig: { apiBase: 'https://api.test', webOrigin: 'https://web.test' } });
+  await sandbox.apiCall('/api/specialists');
+  assert.ok(calls.urls[0].startsWith('https://api.test'), calls.urls[0]);
+});
+
+test('without CARE_CONFIG the signup link falls back to location.origin', async () => {
+  const { sandbox, calls } = loadApp({ origin: 'http://localhost:3000' });
+  await sandbox.signUp('a@b.c', 'pw', 'A B');
+  assert.equal(calls.signUp.options.emailRedirectTo, 'http://localhost:3000/verify.html');
+});
+
+test('a request that never answers times out after 15 s and reads as unreachable', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    let aborted = false;
+    const fetchImpl = (url, opts) => new Promise((_, reject) => {
+      opts.signal.addEventListener('abort', () => {
+        aborted = true;
+        const e = new Error('aborted'); e.name = 'AbortError'; reject(e);
+      });
+    });
+    const { sandbox } = loadApp({ careConfig: { apiBase: 'https://api.test', webOrigin: 'https://web.test' }, fetchImpl });
+    const pending = sandbox.apiCall('/api/specialists');
+    await new Promise((r) => setImmediate(r));
+    mock.timers.tick(14999);
+    assert.equal(aborted, false);
+    mock.timers.tick(1);
+    const out = await pending;
+    assert.equal(aborted, true);
+    assert.equal(out.ok, false);
+    assert.equal(out.status, 0);
+    assert.equal(out.error, 'unreachable');
+  } finally {
+    mock.timers.reset();
+  }
+});
