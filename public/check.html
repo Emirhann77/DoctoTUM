@@ -182,7 +182,9 @@ tailwind.config = {
 <script src="js/i18n/translations.js"></script>
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/api.js"></script>
+<script src="js/records.js"></script>
 <script src="js/doctors.js"></script>
 <script src="js/navigator.js"></script>
 <script>
@@ -499,6 +501,15 @@ document.addEventListener('DOMContentLoaded', async function () {
     if (book) return goToConsult(book.dataset.book);
     if (e.target.closest('#restartBtn')) return restart();
     if (e.target.closest('#saveBtn')) return onSave();
+  });
+
+  // Pre-fill age and ongoing conditions from the profile; the person can still change them.
+  CareRecords.getProfile().then(function (result) {
+    if (!result.ok) return;
+    var age = CareRecords.ageFromDob(result.data.medical && result.data.medical.date_of_birth);
+    if (age != null && !$('age').value) $('age').value = age;
+    if (result.data.conditions.length && !$('conditions').value)
+      $('conditions').value = result.data.conditions.map(function (c) { return c.label; }).join(', ');
   });
 
   CareNavigator.loadRules().then(function (rules) {

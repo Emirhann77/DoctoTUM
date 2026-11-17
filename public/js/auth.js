@@ -1,9 +1,10 @@
 // Supabase auth client — shared across all HTML pages
-// Reads keys injected by each page via window.SUPABASE_URL / window.SUPABASE_ANON_KEY
-// or falls back to the hardcoded project values below.
+// Reads window.SUPABASE_URL / window.SUPABASE_ANON if a page sets them, otherwise the
+// project values below. Both are public by design (the anon key only grants what
+// row-level security allows); the service-role key must never appear in this folder.
 
-const SUPABASE_URL  = window.SUPABASE_URL  || 'https://rfuwggnimjzlrdygbjqw.supabase.co';
-const SUPABASE_ANON = window.SUPABASE_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJmdXdnZ25pbWp6bHJkeWdianF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MTcwMjAsImV4cCI6MjA5MzI5MzAyMH0.EhDjjD6PqjwcXjygBm-xjLFhdF5N25EE8QLqTelrFd8';
+const SUPABASE_URL  = window.SUPABASE_URL  || 'https://fzhoelaooktqryndsuie.supabase.co';
+const SUPABASE_ANON = window.SUPABASE_ANON || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6aG9lbGFvb2t0cXJ5bmRzdWllIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4NjY3NTMsImV4cCI6MjExMDQ0Mjc1M30.RlJkIfmQMjumSSZMTxaQWxN2uMItTTGIPOT5GvVov64';
 
 // Supabase JS v2 loaded via CDN (added by each page via <script> tag)
 let _supabase = null;

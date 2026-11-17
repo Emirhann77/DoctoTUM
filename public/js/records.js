@@ -59,6 +59,7 @@
 
     // -> { displayName, email, medical: {date_of_birth, blood_type, phone, height_cm, weight_kg} | null,
     //      conditions: [{id, label}], allergies: [{id, label}] }
+    // (Plans are not here: subscriptions are written by the backend — js/api.js choosePlan.)
     getProfile: function () {
       return run(async function (db, user) {
         var results = await Promise.all([
@@ -85,7 +86,7 @@
       return run(async function (db, user) {
         var name = clean(fields.displayName, 80);
         if (name) {
-          unwrap(await db.from('profiles').upsert({ id: user.id, display_name: name }, { onConflict: 'id' }));
+          unwrap(await db.from('profiles').update({ display_name: name }).eq('id', user.id));
           await db.auth.updateUser({ data: { full_name: name } });
         }
         unwrap(await db.from('medical_profiles').upsert({
@@ -141,32 +142,6 @@
     removeContact: function (id) {
       return run(async function (db, user) {
         return unwrap(await db.from('emergency_contacts').delete().eq('id', id).eq('user_id', user.id));
-      });
-    },
-
-    // -> [{ slug, name, price_cents_monthly, features }]
-    listPlans: function () {
-      return run(async function (db) {
-        return unwrap(await db.from('plans').select('slug, name, price_cents_monthly, features').order('price_cents_monthly')) || [];
-      });
-    },
-
-    // -> { slug, name, price_cents_monthly } | null
-    currentPlan: function () {
-      return run(async function (db, user) {
-        var rows = unwrap(await db.from('subscriptions').select('status, plans(slug, name, price_cents_monthly)')
-          .eq('user_id', user.id).eq('status', 'active').order('created_at', { ascending: false }).limit(1)) || [];
-        return rows.length ? rows[0].plans : null;
-      });
-    },
-
-    // Demo only: records the choice. No payment is taken and nothing is charged.
-    choosePlan: function (slug) {
-      return run(async function (db, user) {
-        var plan = unwrap(await db.from('plans').select('id, slug, name, price_cents_monthly').eq('slug', slug).single());
-        unwrap(await db.from('subscriptions').update({ status: 'cancelled' }).eq('user_id', user.id).eq('status', 'active'));
-        unwrap(await db.from('subscriptions').insert({ user_id: user.id, plan_id: plan.id, status: 'active' }));
-        return plan;
       });
     },
   };

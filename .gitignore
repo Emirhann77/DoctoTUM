@@ -153,3 +153,6 @@ vite.config.ts.timestamp-*
 .vite/
 
 .pytest_cache/
+
+# local browser-test helper (never commit)
+public/__e2e*

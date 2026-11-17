@@ -29,7 +29,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
     </select>
     <span class="text-lg font-bold tracking-tight text-blue-800" data-i18n="profile.title">My Profile</span>
   </div>
-  <button onclick="document.getElementById('editModal').classList.remove('hidden')" class="text-sm text-primary font-medium px-3 py-1.5 hover:bg-blue-50 rounded-full" data-i18n="profile.edit">Edit</button>
+  <button type="button" id="editOpen" class="text-sm text-primary font-medium px-3 py-1.5 hover:bg-blue-50 rounded-full" data-i18n="profile.edit">Edit</button>
 </header>
 
 <main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
@@ -38,25 +38,25 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   <div class="bg-gradient-to-br from-primary to-blue-800 rounded-3xl p-6 text-white text-center relative overflow-hidden">
     <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full"></div>
     <div class="relative inline-block mb-3">
-      <img alt="Profile" class="w-24 h-24 rounded-full border-4 border-white/30 object-cover mx-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0Lc_0jsybCfzyWC41Q4hAFR_6wQJLCGyIR4W40-LbIiJyXx6-7zuFeyh8tYzz6o-FahtkCy4diZYBuqX5M37rFUVEYYE8vwqYoFmWxaXgL_y-46Gs_3vJtutZEDBx6R7jUfUhWV_RbykByBLdaLnSnrujUKmaAlZ6wj1pAcj7sqvK1cSyodWLwmt6BJKt-b1bokZ3Lr0lulK2ritYVzzUyLInFSYO4i9Ar7IYrdBt0mW1AWdwLe20O9kkN4j4lXSN0W_WfZnIcxk"/>
-      <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-tertiary text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest border-2 border-white whitespace-nowrap">Pro Member</div>
+      <div id="profileAvatar" class="w-24 h-24 rounded-full border-4 border-white/30 bg-white/15 flex items-center justify-center text-3xl font-bold mx-auto" aria-hidden="true"></div>
+      <div id="profilePlanBadge" class="hidden absolute -bottom-1 left-1/2 -translate-x-1/2 bg-tertiary text-[10px] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-widest border-2 border-white whitespace-nowrap"></div>
     </div>
-    <h2 class="text-xl font-bold mt-2">Alex Johnson</h2>
-    <p class="text-blue-200 text-sm">alex.johnson@email.com</p>
+    <h2 id="profileName" class="text-xl font-bold mt-2"></h2>
+    <p id="profileEmail" class="text-blue-200 text-sm"></p>
     <div class="flex justify-center gap-6 mt-4">
       <div class="text-center">
-        <p class="text-xl font-bold">87</p>
-        <p class="text-xs text-blue-200" data-i18n="profile.heroStatsHealth">Health Score</p>
+        <p id="statAppointments" class="text-xl font-bold">—</p>
+        <p class="text-xs text-blue-200" data-i18n="profile.heroStatsVisits">Visits</p>
       </div>
       <div class="w-px bg-white/20"></div>
       <div class="text-center">
-        <p class="text-xl font-bold">3</p>
+        <p id="statMedications" class="text-xl font-bold">—</p>
         <p class="text-xs text-blue-200" data-i18n="profile.heroStatsMedications">Medications</p>
       </div>
       <div class="w-px bg-white/20"></div>
       <div class="text-center">
-        <p class="text-xl font-bold">12</p>
-        <p class="text-xs text-blue-200" data-i18n="profile.heroStatsVisits">Visits</p>
+        <p id="statConditions" class="text-xl font-bold">—</p>
+        <p class="text-xs text-blue-200" data-i18n="profile.heroStatsConditions">Conditions</p>
       </div>
     </div>
   </div>
@@ -111,119 +111,55 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   <!-- Personal Info -->
   <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
     <div class="px-5 py-4 border-b border-slate-100">
-      <h2 class="font-semibold text-on-surface">Personal Information</h2>
+      <h2 class="font-semibold text-on-surface" data-i18n="profile.personalInfo">Personal information</h2>
     </div>
-    <div class="divide-y divide-slate-50">
+    <dl class="divide-y divide-slate-50">
       <div class="px-5 py-4 flex justify-between items-center">
-        <div>
-          <p class="text-xs text-on-surface-variant">Date of Birth</p>
-          <p class="font-medium text-sm mt-0.5">March 15, 1990</p>
-        </div>
-        <span class="material-symbols-outlined text-slate-300">cake</span>
+        <div><dt class="text-xs text-on-surface-variant" data-i18n="profile.dateOfBirth">Date of birth</dt><dd id="infoDob" class="font-medium text-sm mt-0.5">—</dd></div>
+        <span class="material-symbols-outlined text-slate-300" aria-hidden="true">cake</span>
       </div>
       <div class="px-5 py-4 flex justify-between items-center">
-        <div>
-          <p class="text-xs text-on-surface-variant">Blood Type</p>
-          <p class="font-medium text-sm mt-0.5">A+</p>
-        </div>
-        <span class="material-symbols-outlined text-red-400" style="font-variation-settings:'FILL' 1">bloodtype</span>
+        <div><dt class="text-xs text-on-surface-variant" data-i18n="profile.bloodType">Blood type</dt><dd id="infoBlood" class="font-medium text-sm mt-0.5">—</dd></div>
+        <span class="material-symbols-outlined text-red-400" style="font-variation-settings:'FILL' 1" aria-hidden="true">bloodtype</span>
       </div>
       <div class="px-5 py-4 flex justify-between items-center">
-        <div>
-          <p class="text-xs text-on-surface-variant">Height / Weight</p>
-          <p class="font-medium text-sm mt-0.5">5'10" · 175 lbs</p>
-        </div>
-        <span class="material-symbols-outlined text-slate-300">straighten</span>
+        <div><dt class="text-xs text-on-surface-variant" data-i18n="profile.heightWeight">Height / weight</dt><dd id="infoBody" class="font-medium text-sm mt-0.5">—</dd></div>
+        <span class="material-symbols-outlined text-slate-300" aria-hidden="true">straighten</span>
       </div>
       <div class="px-5 py-4 flex justify-between items-center">
-        <div>
-          <p class="text-xs text-on-surface-variant">Phone</p>
-          <p class="font-medium text-sm mt-0.5">+1 (555) 234-5678</p>
-        </div>
-        <span class="material-symbols-outlined text-slate-300">phone</span>
+        <div><dt class="text-xs text-on-surface-variant" data-i18n="profile.phone">Phone</dt><dd id="infoPhone" class="font-medium text-sm mt-0.5">—</dd></div>
+        <span class="material-symbols-outlined text-slate-300" aria-hidden="true">phone</span>
       </div>
-    </div>
+    </dl>
   </div>
 
-  <!-- Medical History -->
+  <!-- Conditions -->
   <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
-    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
-      <h2 class="font-semibold text-on-surface">Medical History</h2>
-      <button onclick="addCondition()" class="text-sm text-primary font-medium">+ Add</button>
+    <div class="px-5 py-4 border-b border-slate-100">
+      <h2 class="font-semibold text-on-surface" data-i18n="profile.conditions">Ongoing conditions</h2>
     </div>
-    <div class="p-5 space-y-3" id="conditionsList">
-      <div class="flex items-center gap-3">
-        <span class="w-2 h-2 bg-red-400 rounded-full flex-shrink-0"></span>
-        <div class="flex-1">
-          <p class="text-sm font-medium">Hypertension</p>
-          <p class="text-xs text-on-surface-variant">Diagnosed 2018 · Managed</p>
-        </div>
-        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Ongoing</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="w-2 h-2 bg-orange-400 rounded-full flex-shrink-0"></span>
-        <div class="flex-1">
-          <p class="text-sm font-medium">Type 2 Diabetes</p>
-          <p class="text-xs text-on-surface-variant">Diagnosed 2020 · Controlled</p>
-        </div>
-        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Ongoing</span>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></span>
-        <div class="flex-1">
-          <p class="text-sm font-medium">Appendectomy</p>
-          <p class="text-xs text-on-surface-variant">Surgery 2015</p>
-        </div>
-        <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Resolved</span>
-      </div>
+    <div class="p-5 space-y-4">
+      <div id="conditionsList"></div>
+      <form id="conditionForm" class="flex gap-2">
+        <label for="conditionInput" class="sr-only" data-i18n="profile.addCondition">Add a condition</label>
+        <input id="conditionInput" type="text" maxlength="80" data-i18n-placeholder="profile.addCondition" placeholder="Add a condition" class="flex-1 min-w-0 text-sm rounded-xl border border-slate-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+        <button type="submit" class="bg-primary text-white text-sm font-semibold px-4 rounded-full hover:bg-blue-800" data-i18n="emergency.add">+ Add</button>
+      </form>
     </div>
   </div>
 
   <!-- Allergies -->
   <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
     <div class="px-5 py-4 border-b border-slate-100">
-      <h2 class="font-semibold text-on-surface">Allergies</h2>
+      <h2 class="font-semibold text-on-surface" data-i18n="profile.allergies">Allergies</h2>
     </div>
-    <div class="p-5 flex flex-wrap gap-2">
-      <span class="bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-full">🚫 Penicillin</span>
-      <span class="bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-full">🚫 Sulfa drugs</span>
-      <span class="bg-orange-100 text-orange-700 text-xs font-medium px-3 py-1.5 rounded-full">⚠️ Pollen (mild)</span>
-      <button onclick="addAllergy()" class="bg-surface-container text-on-surface-variant text-xs font-medium px-3 py-1.5 rounded-full border-2 border-dashed border-slate-200 hover:border-primary hover:text-primary transition-colors">+ Add</button>
-    </div>
-  </div>
-
-  <!-- Insurance Card -->
-  <div>
-    <h2 class="font-semibold text-on-surface mb-3">Insurance Card</h2>
-    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 text-white relative overflow-hidden">
-      <div class="absolute right-4 top-4 opacity-10 text-9xl font-black">+</div>
-      <div class="flex justify-between items-start mb-6">
-        <div>
-          <p class="text-xs text-slate-400 uppercase tracking-wide">Provider</p>
-          <p class="text-lg font-bold">BlueCross BlueShield</p>
-        </div>
-        <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-          <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1">health_and_safety</span>
-        </div>
-      </div>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <p class="text-xs text-slate-400">Member ID</p>
-          <p class="font-mono font-semibold text-sm mt-0.5">XYZ-123-456789</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-400">Group</p>
-          <p class="font-mono font-semibold text-sm mt-0.5">GRP-90021</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-400">Member Name</p>
-          <p class="font-semibold text-sm mt-0.5">Alex Johnson</p>
-        </div>
-        <div>
-          <p class="text-xs text-slate-400">Effective Date</p>
-          <p class="font-semibold text-sm mt-0.5">Jan 1, 2026</p>
-        </div>
-      </div>
+    <div class="p-5 space-y-4">
+      <div id="allergiesList"></div>
+      <form id="allergyForm" class="flex gap-2">
+        <label for="allergyInput" class="sr-only" data-i18n="profile.addAllergy">Add an allergy</label>
+        <input id="allergyInput" type="text" maxlength="80" data-i18n-placeholder="profile.addAllergy" placeholder="Add an allergy" class="flex-1 min-w-0 text-sm rounded-xl border border-slate-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+        <button type="submit" class="bg-primary text-white text-sm font-semibold px-4 rounded-full hover:bg-blue-800" data-i18n="emergency.add">+ Add</button>
+      </form>
     </div>
   </div>
 
@@ -231,58 +167,61 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   <div class="bg-gradient-to-br from-tertiary to-indigo-600 rounded-3xl p-5 text-white">
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">workspace_premium</span>
-        <span class="font-bold">Pro Plan</span>
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1" aria-hidden="true">workspace_premium</span>
+        <span id="planName" class="font-bold"></span>
       </div>
-      <span class="bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full">$59/mo</span>
+      <span id="planPrice" class="hidden bg-yellow-400 text-slate-900 text-xs font-bold px-3 py-1 rounded-full"></span>
     </div>
-    <p class="text-indigo-200 text-sm">24/7 Priority Access · $0 Copayments · Dedicated Health Coach</p>
-    <a href="plans.html" class="mt-4 inline-block bg-white text-tertiary text-sm font-semibold px-5 py-2 rounded-full hover:bg-indigo-50 transition-colors">Manage Plan</a>
+    <a href="plans.html" class="mt-2 inline-block bg-white text-tertiary text-sm font-semibold px-5 py-2 rounded-full hover:bg-indigo-50 transition-colors" data-i18n="profile.managePlan">Manage plan</a>
   </div>
 
-  <!-- Settings -->
+  <!-- Account -->
   <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
-    <div class="px-5 py-4 border-b border-slate-100">
-      <h2 class="font-semibold text-on-surface">Settings</h2>
-    </div>
-    <div class="divide-y divide-slate-50">
-      <button class="w-full px-5 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">notifications</span>
-        <span class="flex-1 text-left text-sm font-medium">Notifications</span>
-        <span class="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
-      </button>
-      <button class="w-full px-5 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">lock</span>
-        <span class="flex-1 text-left text-sm font-medium">Privacy & Security</span>
-        <span class="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
-      </button>
-      <button class="w-full px-5 py-4 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-        <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">language</span>
-        <span class="flex-1 text-left text-sm font-medium">Language</span>
-        <span class="text-xs text-on-surface-variant mr-2">English</span>
-        <span class="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
-      </button>
-      <button onclick="if(confirm('Sign out of CareConnect?'))signOut()" class="w-full px-5 py-4 flex items-center gap-4 hover:bg-red-50 transition-colors">
-        <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">logout</span>
-        <span class="flex-1 text-left text-sm font-medium text-error">Sign Out</span>
-      </button>
-    </div>
+    <button type="button" onclick="if(confirm(careT('profile.signOutConfirm', null, 'Sign out of CareConnect?')))signOut()" class="w-full px-5 py-4 flex items-center gap-4 hover:bg-red-50 transition-colors rounded-3xl">
+      <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1" aria-hidden="true">logout</span>
+      <span class="flex-1 text-left text-sm font-medium text-error" data-i18n="profile.signOut">Sign out</span>
+    </button>
   </div>
 
 </main>
 
 <!-- Edit Modal -->
 <div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-  <div class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
+  <form id="editForm" class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-3 max-h-[90vh] overflow-y-auto">
     <div class="flex justify-between items-center">
-      <h2 class="font-bold text-lg">Edit Profile</h2>
-      <button onclick="document.getElementById('editModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+      <h2 class="font-bold text-lg" data-i18n="profile.editTitle">Edit profile</h2>
+      <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="text-slate-400" data-i18n-aria="common.close" aria-label="Close"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
     </div>
-    <input type="text" value="Alex Johnson" placeholder="Full name" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <input type="email" value="alex.johnson@email.com" placeholder="Email" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <input type="tel" value="+1 (555) 234-5678" placeholder="Phone" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <button onclick="document.getElementById('editModal').classList.add('hidden');alert('Profile updated!')" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors">Save Changes</button>
-  </div>
+    <div>
+      <label for="editName" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.fullName">Full name</label>
+      <input id="editName" type="text" required maxlength="80" autocomplete="name" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label for="editDob" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.dateOfBirth">Date of birth</label>
+        <input id="editDob" type="date" min="1900-01-01" autocomplete="bday" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+      </div>
+      <div>
+        <label for="editBlood" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.bloodType">Blood type</label>
+        <select id="editBlood" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+          <option value="">—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>0+</option><option>0-</option>
+        </select>
+      </div>
+      <div>
+        <label for="editHeight" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.heightCm">Height (cm)</label>
+        <input id="editHeight" type="number" inputmode="decimal" min="30" max="260" step="0.1" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+      </div>
+      <div>
+        <label for="editWeight" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.weightKg">Weight (kg)</label>
+        <input id="editWeight" type="number" inputmode="decimal" min="1" max="500" step="0.1" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+      </div>
+    </div>
+    <div>
+      <label for="editPhone" class="block text-xs text-on-surface-variant mb-1" data-i18n="profile.phone">Phone</label>
+      <input id="editPhone" type="tel" maxlength="30" autocomplete="tel" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+    </div>
+    <button type="submit" id="editSave" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors disabled:opacity-60" data-i18n="profile.saveChanges">Save changes</button>
+  </form>
 </div>
 
 <!-- BottomNavBar -->
@@ -307,35 +246,9 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
 <script src="js/i18n/translations.js"></script>
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/languageContext.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', async () => {
-  const session = await requireAuth();
-  if (!session) return;
-  // Populate real name + email from session
-  const name  = session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User';
-  const email = session.user.email || '';
-  document.querySelectorAll('h2').forEach(el => { if (el.textContent === 'Alex Johnson') el.textContent = name; });
-  document.querySelectorAll('p').forEach(el => { if (el.textContent === 'alex.johnson@email.com') el.textContent = email; });
-});
-
-function addCondition() {
-  const name = prompt('Condition name:');
-  if (!name) return;
-  const list = document.getElementById('conditionsList');
-  const div = document.createElement('div');
-  div.className = 'flex items-center gap-3';
-  div.innerHTML = `<span class="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></span><div class="flex-1"><p class="text-sm font-medium">${name}</p><p class="text-xs text-on-surface-variant">Just added</p></div><span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">New</span>`;
-  list.appendChild(div);
-}
-function addAllergy() {
-  const name = prompt('Allergy name:');
-  if (!name) return;
-  const btn = document.querySelector('[onclick="addAllergy()"]');
-  const span = document.createElement('span');
-  span.className = 'bg-red-100 text-red-700 text-xs font-medium px-3 py-1.5 rounded-full';
-  span.textContent = '🚫 ' + name;
-  btn.parentNode.insertBefore(span, btn);
-}
-</script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/records.js"></script>
+<script src="js/pages/profile.js"></script>
 </body>
 </html>

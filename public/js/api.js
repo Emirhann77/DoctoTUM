@@ -1,38 +1,63 @@
-// CareConnect API client — talks to the FastAPI backend (backend/main.py)
+// CareConnect API client — talks to the FastAPI backend (backend/main.py).
 // Set window.CARE_API_BASE before loading this script to override the default.
+//
+// Who the user is travels only in the Authorization header (their Supabase access
+// token). No request carries a user id: the backend derives it from the token.
 const API_BASE = (typeof window !== 'undefined' && window.CARE_API_BASE) || 'http://localhost:8000';
 
-// Returns the numeric user id from the active Supabase session, falling back to demo
-async function getCurrentUserId() {
-  if (typeof getUser === 'function') {
-    const user = await getUser();
-    if (user) {
-      // Supabase user.id is a UUID — hash to a stable int for the mock db
-      return Math.abs(user.id.split('-').join('').slice(0, 8).split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0)) || 1;
-    }
+// Every call resolves to { ok, status, data, error }:
+//   status 0   -> the backend could not be reached (pages may fall back or say so)
+//   status 401 -> the session is no longer valid; the user is sent to login
+//   other 4xx  -> the request was refused; `error` is a message that can be shown
+async function apiCall(path, options = {}) {
+  let authHeader = {};
+  if (typeof getAccessToken === 'function') {
+    const token = await getAccessToken();
+    if (token) authHeader = { Authorization: `Bearer ${token}` };
   }
-  return 1; // demo fallback
+
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { 'Content-Type': 'application/json', ...authHeader, ...(options.headers || {}) },
+    });
+  } catch (err) {
+    console.warn(`[api] ${path} unreachable`, err.message);
+    return { ok: false, status: 0, data: null, error: 'unreachable' };
+  }
+
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* empty or non-JSON body */ }
+
+  if (res.status === 401) {
+    console.warn(`[api] ${path} -> 401, signing out`);
+    if (typeof signOut === 'function') signOut();
+    return { ok: false, status: 401, data: null, error: 'unauthorized' };
+  }
+  if (!res.ok) {
+    const detail = data && data.detail;
+    const message = typeof detail === 'string' ? detail : `HTTP ${res.status}`;
+    console.warn(`[api] ${path} -> ${res.status}`, message);
+    return { ok: false, status: res.status, data: null, error: message };
+  }
+  return { ok: true, status: res.status, data, error: null };
 }
 
+// Data or null. For reads where "nothing available" is all the caller needs to know.
 async function apiFetch(path, options = {}) {
-  try {
-    // Attach JWT if auth.js is loaded and a session exists
-    let authHeader = {};
-    if (typeof getAccessToken === 'function') {
-      const token = await getAccessToken();
-      if (token) authHeader = { Authorization: `Bearer ${token}` };
-    }
+  const result = await apiCall(path, options);
+  return result.ok ? result.data : null;
+}
 
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...authHeader, ...options.headers },
-      ...options,
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.warn(`[api] ${path} failed — using fallback data.`, err.message);
-    return null;
-  }
+function postJson(body) {
+  return { method: 'POST', body: JSON.stringify(body) };
+}
+
+// ---------- Me ----------
+
+async function getMe() {
+  return apiFetch('/api/users/me');
 }
 
 // ---------- Specialists ----------
@@ -47,26 +72,26 @@ async function getAvailableSpecialists() {
 
 // ---------- Appointments ----------
 
-async function getAppointments() {
-  const userId = await getCurrentUserId();
-  return apiFetch(`/api/appointments?user_id=${userId}`);
+// -> apiCall result; data is a list of { id, specialist_id, specialist_name, specialty, start_time, status, reason }
+async function listAppointments() {
+  return apiCall('/api/appointments');
 }
 
+async function getAppointments() {
+  return apiFetch('/api/appointments');
+}
+
+// -> apiCall result (409 = already booked at that time, 422 = invalid time)
 async function bookAppointment({ specialistId, startTime, reason = '' }) {
-  const userId = await getCurrentUserId();
-  return apiFetch('/api/appointments', {
-    method: 'POST',
-    body: JSON.stringify({
-      user_id: userId,
-      specialist_id: specialistId,
-      start_time: startTime,
-      reason,
-    }),
-  });
+  return apiCall('/api/appointments', postJson({
+    specialist_id: String(specialistId),
+    start_time: startTime,
+    reason,
+  }));
 }
 
 async function cancelAppointment(appointmentId) {
-  return apiFetch(`/api/appointments/${appointmentId}`, { method: 'DELETE' });
+  return apiCall(`/api/appointments/${encodeURIComponent(appointmentId)}`, { method: 'DELETE' });
 }
 
 // ---------- AI Assistant ----------
@@ -86,37 +111,17 @@ function preferenceContextPayload() {
 }
 
 async function aiChat(message) {
-  const userId = await getCurrentUserId();
-  return apiFetch('/api/ai_assistant/chat', {
-    method: 'POST',
-    body: JSON.stringify({
-      user_message: message,
-      user_id: userId,
-      ...preferenceContextPayload(),
-    }),
-  });
-}
-
-async function triageSymptoms({ symptoms, age = 30, knownConditions = [], duration = 'unknown' }) {
-  return apiFetch('/api/ai_assistant/triage', {
-    method: 'POST',
-    body: JSON.stringify({
-      symptoms,
-      age,
-      known_conditions: knownConditions,
-      duration,
-    }),
-  });
+  return apiFetch('/api/ai_assistant/chat', postJson({
+    user_message: message,
+    language: typeof CarePrefs !== 'undefined' ? CarePrefs.getLanguage() : undefined,
+  }));
 }
 
 // ---------- Care Navigator ----------
 
 // input: { symptoms: [slug], description, severity, duration, age, known_conditions }
 async function careNavigate(input) {
-  return apiFetch('/api/care/navigate', {
-    method: 'POST',
-    body: JSON.stringify({ ...input, ...preferenceContextPayload() }),
-  });
+  return apiFetch('/api/care/navigate', postJson({ ...input, ...preferenceContextPayload() }));
 }
 
 // Writes the check to the signed-in user's own rows in Supabase `user_symptoms`
@@ -150,59 +155,58 @@ async function saveSymptomCheck({ symptoms, description, severity, labels = {} }
 
 // ---------- Emergency ----------
 
-async function startEmergency(symptomsOrPayload = '') {
-  const userId = await getCurrentUserId();
-  const body =
-    typeof symptomsOrPayload === 'object' &&
-    symptomsOrPayload !== null &&
-    !Array.isArray(symptomsOrPayload)
-      ? { user_id: userId, ...symptomsOrPayload }
-      : { user_id: userId, symptoms: symptomsOrPayload || '' };
-
-  body.preferred_language =
-    typeof CarePrefs !== 'undefined'
-      ? CarePrefs.getLanguage()
-      : body.preferred_language;
-
-  var locPref =
-    typeof CarePrefs !== 'undefined' &&
-    typeof CarePrefs.getLocationForPayload === 'function'
-      ? CarePrefs.getLocationForPayload()
-      : null;
-  if (locPref && !body.location) body.location = locPref;
-
-  return apiFetch('/api/emergency/start', {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
+// Logs that SOS was pressed. The backend does not contact emergency services
+// (`dispatched` is always false) — the page must tell the user to call 112.
+async function startEmergency(payload = {}) {
+  const body = { symptoms: payload.symptoms || '' };
+  if (typeof CarePrefs !== 'undefined') {
+    body.preferred_language = CarePrefs.getLanguage();
+    const loc = CarePrefs.getLocationForPayload && CarePrefs.getLocationForPayload();
+    if (loc) body.location = loc;
+  }
+  return apiCall('/api/emergency/start', postJson(body));
 }
 
-async function endEmergency(sessionId) {
-  return apiFetch('/api/emergency/end', {
-    method: 'POST',
-    body: JSON.stringify({ session_id: sessionId }),
-  });
+async function endEmergency(alertId) {
+  return apiCall('/api/emergency/end', postJson({ alert_id: alertId }));
 }
 
-// ---------- Prescriptions ----------
+// ---------- Prescriptions & pharmacy ----------
+
+// Read-only: prescriptions are issued by a doctor.
+async function listPrescriptions() {
+  return apiCall('/api/prescriptions');
+}
 
 async function getPrescriptions() {
-  const userId = await getCurrentUserId();
-  return apiFetch(`/api/prescriptions?user_id=${userId}`);
+  return apiFetch('/api/prescriptions');
 }
 
-async function createPrescription({ medication, dosage, instructions, prescribedBy }) {
-  const userId = await getCurrentUserId();
-  return apiFetch('/api/prescriptions', {
-    method: 'POST',
-    body: JSON.stringify({
-      user_id: userId,
-      medication,
-      dosage,
-      instructions,
-      prescribed_by: prescribedBy,
-    }),
-  });
+async function listOrders() {
+  return apiCall('/api/pharmacy/orders');
+}
+
+// items: [{ medication_name, prescription_id?, quantity?, notes? }]
+async function createOrders(items) {
+  return apiCall('/api/pharmacy/orders', postJson({ items }));
+}
+
+async function cancelOrder(orderId) {
+  return apiCall(`/api/pharmacy/orders/${encodeURIComponent(orderId)}/cancel`, { method: 'POST' });
+}
+
+// ---------- Plans (simulated: nothing is charged) ----------
+
+async function listPlans() {
+  return apiCall('/api/plans');
+}
+
+async function getCurrentPlan() {
+  return apiCall('/api/plans/current');
+}
+
+async function choosePlan(slug) {
+  return apiCall('/api/plans/choose', postJson({ slug }));
 }
 
 // ---------- Risk level helpers (mirrors backend/utils/safety.py) ----------

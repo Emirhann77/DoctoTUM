@@ -96,136 +96,27 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- Upcoming Appointment -->
-  <div class="bg-gradient-to-br from-primary to-blue-700 rounded-3xl p-5 text-white">
-    <p class="text-blue-200 text-xs font-medium uppercase tracking-wide mb-2" data-i18n="consult.nextAppointment">Next Appointment</p>
-    <div class="flex items-center gap-4">
-      <img src="https://i.pravatar.cc/80?img=47" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover border-2 border-white/30"/>
-      <div class="flex-1">
-        <p class="font-bold">Dr. Sarah Chen</p>
-        <p class="text-blue-200 text-sm">Cardiologist</p>
-        <div class="flex items-center gap-2 mt-1">
-          <span class="material-symbols-outlined text-sm text-yellow-300">calendar_today</span>
-          <span class="text-sm text-yellow-200 font-medium">Tomorrow, 10:00 AM</span>
-        </div>
-      </div>
-      <button onclick="showCallModal()" class="bg-white text-primary text-sm font-semibold px-4 py-2 rounded-full hover:bg-blue-50 transition-colors" data-i18n="home.join">
-        Join
-      </button>
+  <!-- My appointments (real bookings) -->
+  <section class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm" aria-labelledby="myAppointmentsTitle">
+    <div class="px-5 py-4 border-b border-slate-100">
+      <h2 id="myAppointmentsTitle" class="font-semibold text-on-surface" data-i18n="consult.myAppointments">My appointments</h2>
     </div>
-  </div>
+    <div id="myAppointments" class="divide-y divide-slate-50"></div>
+  </section>
 
   <!-- Doctor List -->
   <div>
     <div class="flex justify-between items-center mb-3">
       <h2 class="font-semibold text-on-surface" data-i18n="consult.availableDoctors">Available Doctors</h2>
-      <span class="text-xs text-on-surface-variant" id="doctorCount" data-i18n="consult.availableCount" data-i18n-count="6">6 available</span>
+      <span class="text-xs text-on-surface-variant" id="doctorCount" data-i18n="consult.availableCount" data-i18n-count="0"></span>
     </div>
-    <div class="space-y-3" id="doctorList">
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="cardiology">
-        <img src="https://i.pravatar.cc/80?img=47" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. Sarah Chen</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.9</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">Cardiologist · 12 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. Sarah Chen','Cardiologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. Sarah Chen')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="dermatology">
-        <img src="https://i.pravatar.cc/80?img=25" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. Marcus Williams</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.8</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">Dermatologist · 8 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. Marcus Williams','Dermatologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. Marcus Williams')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="mental_health">
-        <img src="https://i.pravatar.cc/80?img=32" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. Priya Patel</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">5.0</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">Psychiatrist · 15 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-yellow-400 rounded-full"></span><span class="text-xs text-yellow-600">In 30 min</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. Priya Patel','Psychiatrist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. Priya Patel')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="pediatrics">
-        <img src="https://i.pravatar.cc/80?img=48" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. James Okafor</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.7</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">Pediatrician · 10 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. James Okafor','Pediatrician')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. James Okafor')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="general">
-        <img src="https://i.pravatar.cc/80?img=60" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. Elena Gomez</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.9</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">General Practitioner · 11 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600">Available now</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. Elena Gomez','General Practitioner')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. Elena Gomez')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="cardiology">
-        <img src="https://i.pravatar.cc/80?img=15" alt="Doctor" class="w-14 h-14 rounded-2xl object-cover"/>
-        <div class="flex-1">
-          <div class="flex justify-between">
-            <p class="font-semibold text-sm">Dr. Aiden Park</p>
-            <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">4.6</span></div>
-          </div>
-          <p class="text-xs text-on-surface-variant">Cardiologist · 7 years exp</p>
-          <div class="flex items-center gap-1 mt-1"><span class="w-2 h-2 bg-slate-300 rounded-full"></span><span class="text-xs text-slate-500">Available in 2h</span></div>
-          <div class="flex gap-2 mt-3">
-            <button onclick="showBookModal('Dr. Aiden Park','Cardiologist')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">Book</button>
-            <button onclick="showChatModal('Dr. Aiden Park')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">Message</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <div class="space-y-3" id="doctorList"></div>
   </div>
 
   <!-- Lab Tests Section -->
   <div id="lab" class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
     <div class="px-5 py-4 border-b border-slate-100">
-      <h2 class="font-semibold text-on-surface" data-i18n="consult.labResults">Lab Results</h2>
+      <div class="flex justify-between items-center"><h2 class="font-semibold text-on-surface" data-i18n="consult.labResults">Lab Results</h2><span class="text-[11px] font-semibold uppercase tracking-wide bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full" data-i18n="common.sampleData">Sample data</span></div>
     </div>
     <div class="divide-y divide-slate-50">
       <div class="px-5 py-4 flex items-center gap-4">
@@ -289,46 +180,21 @@ tailwind.config = {
   <div class="bg-white rounded-t-3xl w-full max-w-lg flex flex-col" style="height:85vh">
     <div class="flex justify-between items-center p-4 border-b border-slate-100">
       <div class="flex items-center gap-3">
-        <img src="https://i.pravatar.cc/40?img=47" class="w-10 h-10 rounded-full object-cover" id="chatAvatar"/>
+        <div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center" aria-hidden="true">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </div>
         <div>
-          <p class="font-semibold text-sm" id="chatName">Dr. Sarah Chen</p>
-          <p class="text-xs text-green-500" id="chatOnlineLabel" data-i18n="consult.online">Online</p>
+          <p class="font-semibold text-sm" data-i18n="consult.assistantName">CareConnect assistant</p>
+          <p class="text-xs text-on-surface-variant" data-i18n="consult.assistantNote">AI, not a doctor. It cannot diagnose.</p>
         </div>
       </div>
       <button onclick="document.getElementById('chatModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3">
-      <div class="flex gap-2">
-        <img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/>
-        <div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">Hello! How can I help you today?</p></div>
-      </div>
-    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite"></div>
     <div class="p-4 border-t border-slate-100 flex gap-3">
       <input id="chatInput" type="text" placeholder="Type a message..." data-i18n-placeholder="ai.chatPlaceholder" class="flex-1 bg-surface-container rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" onkeypress="if(event.key==='Enter')sendMsg()"/>
       <button onclick="sendMsg()" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition-colors">
         <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">send</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Video Call Modal -->
-<div id="callModal" class="hidden fixed inset-0 bg-slate-900 z-50 flex flex-col">
-  <div class="relative flex-1 bg-slate-800 flex items-center justify-center">
-    <img src="https://i.pravatar.cc/300?img=47" alt="Doctor" class="w-full h-full object-cover opacity-80"/>
-    <div class="absolute top-4 right-4 w-28 h-36 bg-slate-700 rounded-2xl overflow-hidden border-2 border-white/20">
-      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0Lc_0jsybCfzyWC41Q4hAFR_6wQJLCGyIR4W40-LbIiJyXx6-7zuFeyh8tYzz6o-FahtkCy4diZYBuqX5M37rFUVEYYE8vwqYoFmWxaXgL_y-46Gs_3vJtutZEDBx6R7jUfUhWV_RbykByBLdaLnSnrujUKmaAlZ6wj1pAcj7sqvK1cSyodWLwmt6BJKt-b1bokZ3Lr0lulK2ritYVzzUyLInFSYO4i9Ar7IYrdBt0mW1AWdwLe20O9kkN4j4lXSN0W_WfZnIcxk" class="w-full h-full object-cover"/>
-    </div>
-    <div class="absolute top-4 left-4 bg-black/40 text-white px-3 py-1 rounded-full text-sm">Dr. Sarah Chen</div>
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-4">
-      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 backdrop-blur-sm">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">mic_off</span>
-      </button>
-      <button onclick="document.getElementById('callModal').classList.add('hidden')" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-red-600">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">call_end</span>
-      </button>
-      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 backdrop-blur-sm">
-        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">videocam_off</span>
       </button>
     </div>
   </div>
@@ -356,6 +222,7 @@ tailwind.config = {
 <script src="js/i18n/translations.js"></script>
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/api.js"></script>
 <script src="js/doctors.js"></script>
 <script>
@@ -415,8 +282,8 @@ function doctorCardHTML(doc) {
       ${langBits}
       <div class="flex items-center gap-1 mt-1">${availLabel}</div>
       <div class="flex gap-2 mt-3">
-        <button onclick="showBookModal('${escapeAttr(escapeJsQuoted(doc.name))}','${escapeAttr(escapeJsQuoted(doc.specialty))}',${Number(doc.id)})" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">${book}</button>
-        <button onclick="showChatModal('${escapeAttr(escapeJsQuoted(doc.name))}')" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">${msg}</button>
+        <button onclick="showBookModal('${escapeAttr(escapeJsQuoted(doc.name))}','${escapeAttr(escapeJsQuoted(doc.specialty))}','${escapeAttr(escapeJsQuoted(doc.id))}')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">${book}</button>
+        <button onclick="showChatModal()" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">${msg}</button>
       </div>
     </div>
   </div>`;
@@ -484,12 +351,58 @@ function syncConsultFilterOptionLabels() {
   if (opt && typeof CareI18n !== 'undefined') opt.textContent = CareI18n.t('consult.consultLanguageAny');
 }
 
+// Real doctors when the backend answers; otherwise the demo list (which cannot be booked).
+var doctorsAreLive = false;
+
 async function loadSpecialists() {
   var data = await getSpecialists();
   if (data && Array.isArray(data) && data.length) {
     activeDoctors = data.map(doctorFromApi);
+    doctorsAreLive = true;
     applyDoctorFilters();
   }
+}
+
+// ---- My appointments ---------------------------------------------------------------
+var myAppointments = null; // null = not loaded yet / failed
+
+function appointmentRowHTML(a) {
+  return '<div class="px-5 py-4 flex items-center gap-4">' +
+    '<div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary" aria-hidden="true">event</span></div>' +
+    '<div class="flex-1 min-w-0">' +
+      '<p class="font-medium text-sm">' + escapeHtml(a.specialist_name || '') + '</p>' +
+      '<p class="text-xs text-on-surface-variant">' + escapeHtml([a.specialty, formatDateTime(a.start_time)].filter(Boolean).join(' · ')) + '</p>' +
+      (a.reason ? '<p class="text-xs text-on-surface-variant mt-0.5 truncate">' + escapeHtml(a.reason) + '</p>' : '') +
+    '</div>' +
+    '<button type="button" data-cancel="' + escapeHtml(a.id) + '" class="text-xs font-semibold text-error px-3 py-1.5 rounded-full hover:bg-red-50">' +
+      escapeHtml(careT('consult.cancelAppointment', null, 'Cancel')) + '</button>' +
+  '</div>';
+}
+
+function renderMyAppointments(errorResult) {
+  var box = document.getElementById('myAppointments');
+  if (errorResult) box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(errorResult));
+  else if (!myAppointments) box.innerHTML = stateBlockHTML('hourglass_empty', careT('common.loading', null, 'Loading...'));
+  else if (!myAppointments.length) box.innerHTML = stateBlockHTML('event_busy', careT('consult.noAppointments', null, 'No upcoming appointments. Book one below.'));
+  else box.innerHTML = myAppointments.map(appointmentRowHTML).join('');
+}
+
+async function loadMyAppointments() {
+  var result = await listAppointments();
+  if (!result.ok) { myAppointments = null; return renderMyAppointments(result); }
+  var now = Date.now();
+  myAppointments = result.data.filter(function (a) { return new Date(a.start_time).getTime() >= now - 3600000; });
+  renderMyAppointments();
+}
+
+async function onCancelAppointment(id) {
+  if (!confirm(careT('consult.cancelConfirm', null, 'Cancel this appointment?'))) return;
+  var result = await cancelAppointment(id);
+  if (result.ok || result.status === 404) {
+    showToast(careT('consult.cancelled', null, 'Appointment cancelled.'));
+    return loadMyAppointments();
+  }
+  showToast(apiErrorText(result), 'error');
 }
 
 // ---- Hand-off from the symptom check (check.html) -------------------------------
@@ -566,6 +479,12 @@ document.addEventListener('DOMContentLoaded', async function () {
   renderDateButtons();
   applyDoctorFilters();
   loadSpecialists().then(openHandoffBooking);
+  renderMyAppointments();
+  loadMyAppointments();
+  document.getElementById('myAppointments').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-cancel]');
+    if (btn) onCancelAppointment(btn.dataset.cancel);
+  });
 
   window.addEventListener('careconnect:locale', function () {
     initConsultLocalization();
@@ -575,6 +494,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   window.addEventListener('careconnect:redraw-dynamic', function () {
     syncConsultFilterOptionLabels();
     applyDoctorFilters();
+    renderMyAppointments();
   });
 
   var nearEl = document.getElementById('filterNearMe');
@@ -631,21 +551,44 @@ async function confirmBooking() {
   const hour = timeBtn ? Number(timeBtn.dataset.hour) : 9;
   const when = y ? new Date(y, m - 1, d, hour) : new Date(Date.now() + 86400000);
 
+  if (!selectedSpecialistId) return;
   const result = await bookAppointment({
-    specialistId: selectedSpecialistId || 1,
+    specialistId: selectedSpecialistId,
     startTime: when.toISOString(),
-    reason: (checkHandoff && checkHandoff.reason) || 'Consultation via CareConnect',
+    reason: (checkHandoff && checkHandoff.reason) || '',
   });
 
-  document.getElementById('bookModal').classList.add('hidden');
-  var t = typeof CareI18n !== 'undefined' ? CareI18n.t.bind(CareI18n) : function (k) { return k; };
-  alert(result ? t('consult.bookingConfirmed') : t('consult.bookingQueued'));
+  if (result.ok) {
+    document.getElementById('bookModal').classList.add('hidden');
+    if (checkHandoff) checkHandoff.reason = '';
+    showToast(careT('consult.bookingConfirmed', null, 'Appointment booked.'));
+    loadMyAppointments();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (result.status === 409) {
+    showToast(careT('consult.bookingConflict', null, 'You already have an appointment at that time. Pick another slot.'), 'error');
+  } else if (result.status === 422) {
+    showToast(careT('consult.bookingInvalidTime', null, 'Pick a time in the future.'), 'error');
+  } else if (result.status === 404 || !doctorsAreLive) {
+    showToast(careT('consult.bookingDoctorUnavailable', null, 'This doctor cannot be booked right now.'), 'error');
+  } else {
+    showToast(apiErrorText(result), 'error');
+  }
 }
 
-function showChatModal(name) {
-  document.getElementById('chatName').textContent = name;
+function chatBubbleHTML(html, mine) {
+  return mine
+    ? '<div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 max-w-xs">' + html + '</div></div>'
+    : '<div class="flex gap-2"><div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center mt-1 shrink-0" aria-hidden="true"><span class="material-symbols-outlined text-base">smart_toy</span></div>' +
+      '<div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs">' + html + '</div></div>';
+}
+
+function showChatModal() {
+  var msgs = document.getElementById('chatMessages');
+  if (!msgs.children.length)
+    msgs.innerHTML = chatBubbleHTML('<p class="text-sm">' + escapeHtml(careT('consult.assistantGreeting', null, 'Hello. Tell me what is bothering you and I will suggest a next step.')) + '</p>', false);
   if (typeof CareI18n !== 'undefined') CareI18n.apply(document.getElementById('chatModal'));
   document.getElementById('chatModal').classList.remove('hidden');
+  document.getElementById('chatInput').focus();
 }
 
 // AI-powered chat — calls /api/ai_assistant/chat with emergency safety check
@@ -653,62 +596,44 @@ async function sendMsg() {
   const input = document.getElementById('chatInput');
   const msg = input.value.trim();
   if (!msg) return;
-
-  const esc = msg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  var t = typeof CareI18n !== 'undefined' ? CareI18n.t.bind(CareI18n) : function () { return ''; };
+  var t = typeof CareI18n !== 'undefined' ? CareI18n.t.bind(CareI18n) : function (k) { return k; };
 
   const msgs = document.getElementById('chatMessages');
-  msgs.innerHTML += `<div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 max-w-xs"><p class="text-sm">${esc}</p></div></div>`;
+  const add = function (html, mine) {
+    msgs.insertAdjacentHTML('beforeend', chatBubbleHTML(html, mine));
+    msgs.scrollTop = msgs.scrollHeight;
+  };
+  add('<p class="text-sm">' + escapeHtml(msg) + '</p>', true);
   input.value = '';
-  msgs.scrollTop = msgs.scrollHeight;
 
-  // Client-side emergency check (mirrors backend/utils/safety.py)
-  const emergency = checkEmergencySymptoms(msg);
-  if (emergency.isEmergency) {
-    msgs.innerHTML +=
-      '<div class="flex gap-2"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-1"><span class="material-symbols-outlined text-red-500 text-sm" style="font-variation-settings:\'FILL\' 1">emergency</span></div><div class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm text-red-700 font-semibold">⚠️ ' +
-      t('consult.urgentTitle') +
-      '</p><p class="text-xs text-red-600 mt-1">' +
-      t('consult.urgentDetail') +
-      '<a href="sos.html" class="underline font-semibold">' +
-      t('consult.sosLink') +
-      '</a>' +
-      t('consult.immediately') +
-      '</p></div></div>';
+  // Client-side emergency check first (mirrors backend/utils/safety.py): no waiting on a network call.
+  if (checkEmergencySymptoms(msg).isEmergency) {
+    msgs.insertAdjacentHTML('beforeend',
+      '<div class="flex gap-2" role="alert"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-1 shrink-0"><span class="material-symbols-outlined text-red-500 text-sm" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">emergency</span></div>' +
+      '<div class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm text-red-700 font-semibold">' + escapeHtml(t('consult.urgentTitle')) + '</p>' +
+      '<p class="text-xs text-red-600 mt-1">' + escapeHtml(t('consult.urgentDetail')) + '<a href="sos.html" class="underline font-semibold">' + escapeHtml(t('consult.sosLink')) + '</a>' + escapeHtml(t('consult.immediately')) + '</p></div></div>');
     msgs.scrollTop = msgs.scrollHeight;
     return;
   }
 
-  // Typing indicator
   const typingId = 'typing-' + Date.now();
-  msgs.innerHTML += `<div id="${typingId}" class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2"><p class="text-sm text-slate-400">${t('consult.typing')}</p></div></div>`;
+  msgs.insertAdjacentHTML('beforeend', '<div id="' + typingId + '">' + chatBubbleHTML('<p class="text-sm text-slate-400">' + escapeHtml(t('consult.typing')) + '</p>', false) + '</div>');
   msgs.scrollTop = msgs.scrollHeight;
 
   const result = await aiChat(msg);
   document.getElementById(typingId)?.remove();
 
-  let replyText, riskHtml = '';
-  if (result) {
-    replyText = result.message || result.recommendation || 'I\'ll review this with your doctor.';
-    if (result.risk_level && result.risk_level !== 'low') {
-      const badge = riskBadgeClass(result.risk_level);
-      riskHtml = `<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ${badge}">${result.risk_level.toUpperCase()} RISK</span>`;
-    }
-  } else {
-    const fallbacks = [
-      'I understand. Let me review your records.',
-      'Can you describe your symptoms in more detail?',
-      'I recommend scheduling a follow-up visit.',
-      'Based on your history, this seems within normal range. Let\'s monitor it.',
-    ];
-    replyText = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  if (!result) {
+    return add('<p class="text-sm">' + escapeHtml(careT('consult.assistantUnavailable', null, 'The assistant is unavailable right now. You can book a doctor below, or use SOS in an emergency.')) + '</p>', false);
   }
-
-  msgs.innerHTML += `<div class="flex gap-2"><img src="https://i.pravatar.cc/32?img=47" class="w-8 h-8 rounded-full object-cover mt-1"/><div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm">${replyText}</p>${riskHtml}</div></div>`;
-  msgs.scrollTop = msgs.scrollHeight;
+  var html = '<p class="text-sm whitespace-pre-line">' + escapeHtml(result.message || '') + '</p>';
+  if (result.risk_level && result.risk_level !== 'low')
+    html += '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ' + riskBadgeClass(result.risk_level) + '">' +
+      escapeHtml(careT('consult.risk.' + result.risk_level, null, result.risk_level.toUpperCase())) + '</span>';
+  if (result.recommendation === 'emergency')
+    html += '<a href="sos.html" class="block mt-2 text-xs font-semibold text-error underline">' + escapeHtml(t('consult.sosLink')) + '</a>';
+  add(html, false);
 }
-
-function showCallModal() { document.getElementById('callModal').classList.remove('hidden'); }
 </script>
 </body>
 </html>

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/navigator.test.mjs",
+    "test": "node --test tests/navigator.test.mjs tests/i18n.test.mjs",
     "backend:test": "python -m pytest backend/tests -q",
     "backend:dev": "python -m uvicorn backend.main:app --reload --port 8000"
   },

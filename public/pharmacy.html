@@ -41,146 +41,42 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
   <div id="cartBanner" class="hidden bg-secondary text-white rounded-2xl px-4 py-3 flex items-center justify-between">
     <div class="flex items-center gap-2">
       <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">shopping_cart</span>
-      <span class="text-sm font-medium" id="cartText">1 item in cart</span>
+      <span class="text-sm font-medium" id="cartText"></span>
     </div>
-    <button onclick="checkout()" class="bg-white text-secondary text-sm font-semibold px-4 py-1.5 rounded-full">Checkout</button>
+    <button type="button" id="checkoutBtn" class="bg-white text-secondary text-sm font-semibold px-4 py-1.5 rounded-full disabled:opacity-60" data-i18n="pharmacy.sendRequest">Send request</button>
   </div>
 
   <!-- Active Prescriptions -->
   <div>
     <div class="flex justify-between items-center mb-3">
-      <h2 class="font-semibold text-on-surface">Active Prescriptions</h2>
+      <h2 class="font-semibold text-on-surface" data-i18n="pharmacy.prescriptions">My prescriptions</h2>
       <button onclick="document.getElementById('newRxModal').classList.remove('hidden')" class="text-sm text-primary font-medium flex items-center gap-1">
-        <span class="material-symbols-outlined text-sm">add</span>Add
+        <span class="material-symbols-outlined text-sm" aria-hidden="true">add</span><span data-i18n="pharmacy.requestMedication">Request a medication</span>
       </button>
     </div>
-    <div class="space-y-3" id="rxList">
-
-      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-              <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1">medication</span>
-            </div>
-            <div>
-              <p class="font-semibold text-sm">Lisinopril 10mg</p>
-              <p class="text-xs text-on-surface-variant">Prescribed by Dr. Chen</p>
-            </div>
-          </div>
-          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Active</span>
-        </div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined text-xs text-on-surface-variant">schedule</span>
-          <span class="text-xs text-on-surface-variant">Once daily · Morning</span>
-        </div>
-        <p class="text-xs text-on-surface-variant mb-2">28 of 30 pills remaining</p>
-        <div class="progress-bar mb-3"><div class="progress-fill" style="width:93%"></div></div>
-        <div class="flex gap-2">
-          <button onclick="addToCart('Lisinopril 10mg','$12.99')" class="flex-1 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90 transition-opacity">Refill ($12.99)</button>
-          <button class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-2 rounded-full">Details</button>
-        </div>
-      </div>
-
-      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">medication</span>
-            </div>
-            <div>
-              <p class="font-semibold text-sm">Metformin 500mg</p>
-              <p class="text-xs text-on-surface-variant">Prescribed by Dr. Chen</p>
-            </div>
-          </div>
-          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Active</span>
-        </div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined text-xs text-on-surface-variant">schedule</span>
-          <span class="text-xs text-on-surface-variant">Twice daily · With meals</span>
-        </div>
-        <p class="text-xs text-on-surface-variant mb-2">12 of 60 pills remaining</p>
-        <div class="progress-bar mb-3"><div class="progress-fill" style="width:20%;background:#ba1a1a"></div></div>
-        <div class="flex gap-2">
-          <button onclick="addToCart('Metformin 500mg','$8.49')" class="flex-1 bg-error text-white text-xs font-semibold py-2 rounded-full hover:opacity-90 transition-opacity">⚠️ Refill Soon ($8.49)</button>
-          <button class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-2 rounded-full">Details</button>
-        </div>
-      </div>
-
-      <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">medication</span>
-            </div>
-            <div>
-              <p class="font-semibold text-sm">Atorvastatin 20mg</p>
-              <p class="text-xs text-on-surface-variant">Prescribed by Dr. Chen</p>
-            </div>
-          </div>
-          <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Active</span>
-        </div>
-        <div class="flex items-center gap-2 mb-2">
-          <span class="material-symbols-outlined text-xs text-on-surface-variant">schedule</span>
-          <span class="text-xs text-on-surface-variant">Once daily · Evening</span>
-        </div>
-        <p class="text-xs text-on-surface-variant mb-2">20 of 30 pills remaining</p>
-        <div class="progress-bar mb-3"><div class="progress-fill" style="width:67%"></div></div>
-        <div class="flex gap-2">
-          <button onclick="addToCart('Atorvastatin 20mg','$15.99')" class="flex-1 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90 transition-opacity">Refill ($15.99)</button>
-          <button class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-2 rounded-full">Details</button>
-        </div>
-      </div>
-
-    </div>
+    <div class="space-y-3" id="rxList"></div>
   </div>
 
-  <!-- Delivery Tracker -->
-  <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm p-5">
-    <h2 class="font-semibold text-on-surface mb-4">Order Tracking</h2>
-    <div class="flex items-center gap-2 mb-4">
-      <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-        <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1">local_shipping</span>
-      </div>
-      <div>
-        <p class="font-medium text-sm">Order #CC-29481</p>
-        <p class="text-xs text-on-surface-variant">Estimated arrival: Today by 6 PM</p>
-      </div>
+  <!-- Orders -->
+  <section class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm" aria-labelledby="ordersTitle">
+    <div class="px-5 py-4 border-b border-slate-100">
+      <h2 id="ordersTitle" class="font-semibold text-on-surface" data-i18n="pharmacy.orders">My orders</h2>
+      <p class="text-xs text-on-surface-variant mt-0.5" data-i18n="pharmacy.noPaymentNote">Requests go to the pharmacy for review. No payment is taken in this version.</p>
     </div>
-    <div class="relative">
-      <div class="absolute left-4 top-4 bottom-4 w-0.5 bg-slate-100"></div>
-      <div class="space-y-4">
-        <div class="flex items-start gap-4">
-          <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center z-10 relative"><span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">check</span></div>
-          <div><p class="text-sm font-medium">Order Placed</p><p class="text-xs text-on-surface-variant">May 1, 9:00 AM</p></div>
-        </div>
-        <div class="flex items-start gap-4">
-          <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center z-10 relative"><span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">check</span></div>
-          <div><p class="text-sm font-medium">Preparing</p><p class="text-xs text-on-surface-variant">May 1, 11:30 AM</p></div>
-        </div>
-        <div class="flex items-start gap-4">
-          <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center z-10 relative animate-pulse"><span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">local_shipping</span></div>
-          <div><p class="text-sm font-medium text-primary">Out for Delivery</p><p class="text-xs text-on-surface-variant">May 2, 2:15 PM · Now</p></div>
-        </div>
-        <div class="flex items-start gap-4">
-          <div class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center z-10 relative"><span class="material-symbols-outlined text-slate-300 text-sm" style="font-variation-settings:'FILL' 1">home</span></div>
-          <div><p class="text-sm font-medium text-slate-400">Delivered</p><p class="text-xs text-slate-300">Expected by 6:00 PM</p></div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <div id="orderList" class="divide-y divide-slate-50"></div>
+  </section>
 
   <!-- OTC Medications -->
   <div>
     <h2 class="font-semibold text-on-surface mb-3">Over-the-Counter</h2>
-    <div class="grid grid-cols-2 gap-3">
+    <div class="grid grid-cols-2 gap-3" id="otcList">
       <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
         <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-3">
           <span class="material-symbols-outlined text-orange-500 text-2xl" style="font-variation-settings:'FILL' 1">vaccines</span>
         </div>
         <p class="font-semibold text-sm">Ibuprofen 200mg</p>
         <p class="text-xs text-on-surface-variant mt-1">Pain relief · 100 tablets</p>
-        <p class="font-bold text-secondary mt-2">$6.99</p>
-        <button onclick="addToCart('Ibuprofen 200mg','$6.99')" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90">Add to Cart</button>
+        <button type="button" data-otc="Ibuprofen 200mg" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90" data-i18n="pharmacy.addToRequest">Add to request</button>
       </div>
       <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
         <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
@@ -188,8 +84,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
         </div>
         <p class="font-semibold text-sm">Allergy Relief</p>
         <p class="text-xs text-on-surface-variant mt-1">Cetirizine 10mg · 30 tablets</p>
-        <p class="font-bold text-secondary mt-2">$11.49</p>
-        <button onclick="addToCart('Allergy Relief','$11.49')" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90">Add to Cart</button>
+        <button type="button" data-otc="Allergy Relief" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90" data-i18n="pharmacy.addToRequest">Add to request</button>
       </div>
       <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
         <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mb-3">
@@ -197,8 +92,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
         </div>
         <p class="font-semibold text-sm">Vitamin D3 2000IU</p>
         <p class="text-xs text-on-surface-variant mt-1">Immune support · 90 softgels</p>
-        <p class="font-bold text-secondary mt-2">$14.99</p>
-        <button onclick="addToCart('Vitamin D3','$14.99')" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90">Add to Cart</button>
+        <button type="button" data-otc="Vitamin D3 2000IU" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90" data-i18n="pharmacy.addToRequest">Add to request</button>
       </div>
       <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
         <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-3">
@@ -206,26 +100,31 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
         </div>
         <p class="font-semibold text-sm">Omega-3 Fish Oil</p>
         <p class="text-xs text-on-surface-variant mt-1">Heart health · 60 capsules</p>
-        <p class="font-bold text-secondary mt-2">$19.99</p>
-        <button onclick="addToCart('Omega-3 Fish Oil','$19.99')" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90">Add to Cart</button>
+        <button type="button" data-otc="Omega-3 Fish Oil" class="w-full mt-3 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90" data-i18n="pharmacy.addToRequest">Add to request</button>
       </div>
     </div>
   </div>
 
 </main>
 
-<!-- New Rx Modal -->
+<!-- Medication request -->
 <div id="newRxModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-  <div class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
+  <form id="requestForm" class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
     <div class="flex justify-between items-center">
-      <h2 class="font-bold text-lg">Add Prescription</h2>
-      <button onclick="document.getElementById('newRxModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+      <h2 class="font-bold text-lg" data-i18n="pharmacy.requestMedication">Request a medication</h2>
+      <button type="button" onclick="document.getElementById('newRxModal').classList.add('hidden')" class="text-slate-400" data-i18n-aria="common.close" aria-label="Close"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
     </div>
-    <input type="text" placeholder="Medication name" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <input type="text" placeholder="Dosage (e.g. 10mg)" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <input type="text" placeholder="Prescribing doctor" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
-    <button onclick="submitNewRx()" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors">Submit for Verification</button>
-  </div>
+    <p class="text-xs text-on-surface-variant" data-i18n="pharmacy.requestHint">The pharmacy reviews every request. Prescription-only medicines need a prescription from your doctor.</p>
+    <div>
+      <label for="requestName" class="block text-sm font-medium mb-1" data-i18n="pharmacy.medicationName">Medication name</label>
+      <input id="requestName" type="text" required maxlength="120" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+    </div>
+    <div>
+      <label for="requestNote" class="block text-sm font-medium mb-1" data-i18n="pharmacy.noteOptional">Note for the pharmacy (optional)</label>
+      <input id="requestNote" type="text" maxlength="300" class="w-full bg-surface-container rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+    </div>
+    <button type="submit" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors" data-i18n="pharmacy.sendRequest">Send request</button>
+  </form>
 </div>
 
 <!-- BottomNavBar -->
@@ -250,77 +149,8 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container
 <script src="js/i18n/translations.js"></script>
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/api.js"></script>
-<script>
-let cartCount = 0;
-let cartTotal = 0;
-
-function addToCart(name, price) {
-  cartCount++;
-  cartTotal += parseFloat(price.replace('$',''));
-  const banner = document.getElementById('cartBanner');
-  banner.classList.remove('hidden');
-  document.getElementById('cartText').textContent = cartCount + (cartCount===1?' item':' items') + ' — $' + cartTotal.toFixed(2);
-}
-
-function checkout() {
-  cartCount = 0; cartTotal = 0;
-  document.getElementById('cartBanner').classList.add('hidden');
-  alert('Order placed! Estimated delivery: Today by 6 PM.');
-}
-
-// Load real prescriptions from backend; fall back to static UI if unavailable
-async function loadPrescriptions() {
-  const data = await getPrescriptions();
-  if (!data || !Array.isArray(data) || data.length === 0) return; // keep static fallback
-
-  const list = document.getElementById('rxList');
-  const colors = ['green','blue','purple','orange'];
-  const colorMap = { green: 'bg-green-100 text-secondary', blue: 'bg-blue-100 text-primary', purple: 'bg-purple-100 text-tertiary', orange: 'bg-orange-100 text-orange-500' };
-
-  list.innerHTML = data.map((rx, i) => {
-    const c = colors[i % colors.length];
-    return `
-    <div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 shadow-sm">
-      <div class="flex items-start justify-between mb-3">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 ${c.split(' ')[0]} rounded-xl flex items-center justify-center">
-            <span class="material-symbols-outlined ${c.split(' ')[1]}" style="font-variation-settings:'FILL' 1">medication</span>
-          </div>
-          <div>
-            <p class="font-semibold text-sm">${rx.medication}</p>
-            <p class="text-xs text-on-surface-variant">Prescribed by ${rx.prescribed_by}</p>
-          </div>
-        </div>
-        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Active</span>
-      </div>
-      <p class="text-xs text-on-surface-variant mb-2">${rx.instructions} · ${rx.dosage}</p>
-      <div class="flex gap-2">
-        <button onclick="addToCart('${rx.medication}','$12.99')" class="flex-1 bg-secondary text-white text-xs font-semibold py-2 rounded-full hover:opacity-90">Refill ($12.99)</button>
-        <button class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-2 rounded-full">Details</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function submitNewRx() {
-  const inputs = document.querySelectorAll('#newRxModal input');
-  const medication = inputs[0].value.trim();
-  const dosage = inputs[1].value.trim();
-  const prescribedBy = inputs[2].value.trim();
-  if (!medication || !dosage || !prescribedBy) { alert('Please fill all fields.'); return; }
-
-  const result = await createPrescription({ medication, dosage, instructions: 'As directed', prescribedBy });
-  document.getElementById('newRxModal').classList.add('hidden');
-  alert(result ? 'Prescription added!' : 'Prescription submitted for verification.');
-  loadPrescriptions();
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const session = await requireAuth();
-  if (!session) return;
-  loadPrescriptions();
-});
-</script>
+<script src="js/pages/pharmacy.js"></script>
 </body>
 </html>
