@@ -1,0 +1,45 @@
+# Render Blueprint. Apply with Render dashboard -> New -> Blueprint -> pick this repo and branch.
+# Secret values are not stored here (sync: false); enter them in the dashboard when prompted.
+services:
+  - type: web
+    name: careconnect-api
+    runtime: python
+    plan: starter
+    region: frankfurt
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/integrations/status
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: CORS_ALLOW_ORIGINS
+        value: capacitor://localhost,https://careconnect-web.onrender.com
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: careconnect-web
+    runtime: static
+    region: frankfurt
+    buildCommand: echo static
+    staticPublishPath: public
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-XSS-Protection
+        value: 1; mode=block
