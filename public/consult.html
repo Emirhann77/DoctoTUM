@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - Consult</title>
+<script src="vendor/tailwind-play-forms-cq.js"></script>
+<script src="vendor/supabase-js.umd.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-secondary-container":"#007354","on-primary":"#ffffff","on-tertiary":"#ffffff","secondary-fixed-dim":"#62dcaf","background":"#f7f9fb","on-primary-fixed-variant":"#00419c","inverse-on-surface":"#eff1f3","tertiary":"#2724b8","on-error-container":"#93000a","on-primary-fixed":"#001945","surface-container-high":"#e6e8ea","primary-fixed":"#d9e2ff","on-tertiary-fixed":"#07006c","outline":"#737784","on-primary-container":"#bcceff","error":"#ba1a1a","surface-container-low":"#f2f4f6","surface-tint":"#1d59c1","tertiary-fixed":"#e1e0ff","on-surface-variant":"#434653","inverse-surface":"#2d3133","error-container":"#ffdad6","on-surface":"#191c1e","secondary":"#006c4f","on-background":"#191c1e","secondary-fixed":"#80f9ca","on-tertiary-fixed-variant":"#2f2ebe","on-secondary":"#ffffff","surface-dim":"#d8dadc","on-secondary-fixed-variant":"#00513b","surface-bright":"#f7f9fb","on-tertiary-container":"#c9caff","on-secondary-fixed":"#002116","tertiary-fixed-dim":"#c0c1ff","surface":"#f7f9fb","primary-container":"#0f52ba","outline-variant":"#c3c6d5","primary":"#003c90","surface-container":"#eceef0","tertiary-container":"#4243cf","on-error":"#ffffff","primary-fixed-dim":"#b0c6ff","surface-variant":"#e0e3e5","secondary-container":"#80f9ca","inverse-primary":"#b0c6ff","surface-container-highest":"#e0e3e5","surface-container-lowest":"#ffffff"
+      },
+      borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},
+      spacing:{lg:"24px",xs:"8px",xl:"32px",sm:"12px",gutter:"16px",base:"4px",margin:"20px",md:"16px"},
+      fontFamily:{"body-lg":["Public Sans"],"body-md":["Public Sans"],"h3":["Manrope"],"body-sm":["Public Sans"],"h2":["Manrope"],"label-caps":["Public Sans"],"h1":["Manrope"],"button":["Public Sans"]},
+      fontSize:{"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"h3":["20px",{"lineHeight":"28px","fontWeight":"600"}],"body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],"h2":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"h1":["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],"button":["16px",{"lineHeight":"20px","fontWeight":"600"}]}
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{min-height:max(884px,100dvh)}
+  .tab-active{background:#003c90;color:#fff;border-radius:9999px}
+  .chip-active{background:#003c90;color:#fff}
+  .chip{background:#eceef0;color:#434653;border-radius:9999px;padding:6px 16px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+  .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-slate-100">
+      <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+    </a>
+    <label class="sr-only" for="careHeaderLang" data-i18n="profile.interfaceLanguage">Language</label>
+    <select id="careHeaderLang" class="text-xs border border-slate-200 rounded-lg px-1.5 py-1 bg-white w-[4.25rem] mr-1 shrink-0 cursor-pointer" title="Interface language">
+      <option value="en">EN</option>
+      <option value="de">DE</option>
+      <option value="tr">TR</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+    </select>
+    <span class="text-lg font-bold tracking-tight text-blue-800" data-i18n="consult.title">Consultations</span>
+  </div>
+  <a href="sos.html" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">emergency</span>
+  </a>
+</header>
+
+<main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
+
+  <!-- Search Bar -->
+  <div class="relative">
+    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+    <input id="searchInput" type="text" placeholder="Search doctors, specialties..." data-i18n-placeholder="consult.searchPlaceholder" class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest rounded-2xl border border-slate-100 focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"/>
+  </div>
+
+  <!-- Specialty Chips -->
+  <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style="scrollbar-width:none" id="specialtyChipRow">
+    <button type="button" class="chip chip-specialty chip-active whitespace-nowrap" data-specialty="all" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.all">All</button>
+    <button type="button" class="chip chip-specialty whitespace-nowrap" data-specialty="cardiology" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.cardiology">Cardiology</button>
+    <button type="button" class="chip chip-specialty whitespace-nowrap" data-specialty="dermatology" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.dermatology">Dermatology</button>
+    <button type="button" class="chip chip-specialty whitespace-nowrap" data-specialty="pediatrics" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.pediatrics">Pediatrics</button>
+    <button type="button" class="chip chip-specialty whitespace-nowrap" data-specialty="mental_health" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.mental_health">Mental Health</button>
+    <button type="button" class="chip chip-specialty whitespace-nowrap" data-specialty="general" onclick="filterDoctorsChip(this)" data-i18n="consult.specialties.general">General</button>
+  </div>
+
+  <div id="consultFiltersCard" class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 space-y-3">
+    <p id="checkHandoffNote" class="hidden flex items-center gap-2 text-xs font-medium text-secondary bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2">
+      <span class="material-symbols-outlined text-base" aria-hidden="true">stethoscope</span><span data-i18n="consult.fromCheck">Matched from your symptom check</span>
+    </p>
+    <p class="text-xs font-semibold uppercase tracking-wide text-on-surface" data-i18n="consult.filtersTitle">Find care</p>
+    <label class="flex items-center gap-2 text-sm text-on-surface cursor-pointer">
+      <input type="checkbox" id="filterNearMe" class="rounded border-slate-300 text-primary focus:ring-primary/30"/>
+      <span data-i18n="consult.showNearMe">Show doctors near me</span>
+    </label>
+    <div>
+      <label for="filterConsultLang" class="block text-xs text-on-surface-variant mb-1" data-i18n="consult.consultLanguageHint">Preferred doctor language</label>
+      <select id="filterConsultLang" class="w-full text-sm rounded-xl border border-slate-100 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30">
+        <option value="" data-i18n-label-key="consult.consultLanguageAny">Any language</option>
+        <option value="en">English</option>
+        <option value="de">German</option>
+        <option value="tr">Turkish</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- My appointments (real bookings) -->
+  <section class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm" aria-labelledby="myAppointmentsTitle">
+    <div class="px-5 py-4 border-b border-slate-100">
+      <h2 id="myAppointmentsTitle" class="font-semibold text-on-surface" data-i18n="consult.myAppointments">My appointments</h2>
+    </div>
+    <div id="myAppointments" class="divide-y divide-slate-50"></div>
+  </section>
+
+  <!-- Doctor List -->
+  <div>
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold text-on-surface" data-i18n="consult.availableDoctors">Available Doctors</h2>
+      <span class="text-xs text-on-surface-variant" id="doctorCount" data-i18n="consult.availableCount" data-i18n-count="0"></span>
+    </div>
+    <p id="demoDoctorsNote" class="hidden text-xs font-medium bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-3 py-2 mb-3" role="status" data-i18n="consult.demoDoctors">The doctor directory is unreachable. These are example doctors and cannot be booked right now.</p>
+    <div class="space-y-3" id="doctorList"></div>
+  </div>
+
+  <!-- Lab Tests Section -->
+  <div id="lab" class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
+    <div class="px-5 py-4 border-b border-slate-100">
+      <div class="flex justify-between items-center"><h2 class="font-semibold text-on-surface" data-i18n="consult.labResults">Lab Results</h2><span class="text-[11px] font-semibold uppercase tracking-wide bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full" data-i18n="common.sampleData">Sample data</span></div>
+    </div>
+    <div class="divide-y divide-slate-50">
+      <div class="px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">lab_panel</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Complete Blood Panel</p>
+          <p class="text-xs text-on-surface-variant">Apr 28 · Dr. Chen</p>
+        </div>
+        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium">Normal</span>
+      </div>
+      <div class="px-5 py-4 flex items-center gap-4">
+        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">lab_panel</span>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-sm">Lipid Panel</p>
+          <p class="text-xs text-on-surface-variant">Apr 14 · Dr. Chen</p>
+        </div>
+        <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-medium">Review</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Book Modal -->
+<div id="bookModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end justify-center">
+  <div class="bg-white rounded-t-3xl w-full max-w-lg p-6 space-y-4">
+    <div class="flex justify-between items-center">
+      <h2 class="font-bold text-lg" id="bookModalTitle" data-i18n="consult.bookAppointment">Book Appointment</h2>
+      <button onclick="document.getElementById('bookModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="text-sm text-on-surface-variant" id="bookModalSub"></p>
+    <div>
+      <p class="text-sm font-medium mb-2" data-i18n="consult.selectDate">Select Date</p>
+      <div class="grid grid-cols-5 gap-2" id="dateButtons"></div>
+    </div>
+    <div>
+      <p class="text-sm font-medium mb-2" data-i18n="consult.selectTime">Select Time</p>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="time-btn bg-primary text-white text-sm rounded-xl py-2" data-hour="9" onclick="selectTime(this)">9:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="10" onclick="selectTime(this)">10:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="11" onclick="selectTime(this)">11:00 AM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="14" onclick="selectTime(this)">2:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="15" onclick="selectTime(this)">3:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="16" onclick="selectTime(this)">4:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="17" onclick="selectTime(this)">5:00 PM</button>
+        <button class="time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2" data-hour="18" onclick="selectTime(this)">6:00 PM</button>
+      </div>
+    </div>
+    <button onclick="confirmBooking()" class="w-full bg-primary text-white font-semibold py-4 rounded-full hover:bg-blue-800 transition-colors" data-i18n="consult.confirmBooking">
+      Confirm Booking
+    </button>
+  </div>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-end justify-center">
+  <div class="bg-white rounded-t-3xl w-full max-w-lg flex flex-col" style="height:85vh">
+    <div class="flex justify-between items-center p-4 border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center" aria-hidden="true">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </div>
+        <div>
+          <p class="font-semibold text-sm" data-i18n="consult.assistantName">CareConnect assistant</p>
+          <p class="text-xs text-on-surface-variant" data-i18n="consult.assistantNote">AI, not a doctor. It cannot diagnose.</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('chatModal').classList.add('hidden')" class="text-slate-400"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3" aria-live="polite"></div>
+    <div class="p-4 border-t border-slate-100 flex gap-3">
+      <input id="chatInput" type="text" placeholder="Type a message..." data-i18n-placeholder="ai.chatPlaceholder" class="flex-1 bg-surface-container rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" onkeypress="if(event.key==='Enter')sendMsg()"/>
+      <button onclick="sendMsg()" class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-blue-800 transition-colors">
+        <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span data-i18n="nav.home">Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-blue-700 bg-blue-50 rounded-xl px-3 py-1">
+    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings:'FILL' 1">video_chat</span><span data-i18n="nav.consult">Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span data-i18n="nav.pharmacy">Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span data-i18n="nav.profile">Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span data-i18n="nav.sos">SOS</span>
+  </a>
+</nav>
+
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/doctors.js"></script>
+<script>
+// Doctor records, FALLBACK_DOCTORS and specialty/language helpers live in js/doctors.js
+function escapeJsQuoted(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function escapeAttr(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+let activeChipSpecialty = 'all';
+
+let activeDoctors = FALLBACK_DOCTORS;
+let selectedSpecialistId = null;
+
+function localizedBookBtn() {
+  return typeof CareI18n !== 'undefined' ? CareI18n.t('consult.book') : 'Book';
+}
+function localizedMessageBtn() {
+  return typeof CareI18n !== 'undefined' ? CareI18n.t('consult.message') : 'Message';
+}
+
+function doctorCardHTML(doc) {
+  var availLabel =
+    doc.available || doc.is_available
+      ? '<span class="w-2 h-2 bg-green-400 rounded-full"></span><span class="text-xs text-green-600" data-i18n="consult.availableNow">Available now</span>'
+      : '<span class="w-2 h-2 bg-slate-300 rounded-full"></span><span class="text-xs text-slate-500" data-i18n="consult.unavailable">Unavailable</span>';
+  var exp = doc.experience || '';
+  var locBits = '';
+  if (doc.city || doc.country) locBits += ' · ' + [doc.city, doc.country].filter(Boolean).join(', ');
+  var langBits = '';
+  var labels = [];
+  doc.languageCodes.forEach(function (c) {
+    var lab = typeof CareI18n !== 'undefined' ? CareI18n.spokenLanguageLabel(c) : c;
+    labels.push(lab);
+  });
+  if (labels.length)
+    langBits =
+      '<p class="text-[11px] text-on-surface-variant mt-0.5 truncate" title="' +
+      escapeAttr(labels.join(', ')) +
+      '">' +
+      escapeAttr(labels.join(', ')) +
+      '</p>';
+  var book = localizedBookBtn(),
+    msg = localizedMessageBtn();
+  return `
+  <div class="doctor-card bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow" data-specialty="${doc.specialtySlug}">
+    ${doctorAvatarHTML(doc)}
+    <div class="flex-1">
+      <div class="flex justify-between">
+        <p class="font-semibold text-sm">${escapeAttr(doc.name)}</p>
+        <div class="flex items-center gap-1"><span class="material-symbols-outlined text-yellow-400 text-sm" style="font-variation-settings:'FILL' 1">star</span><span class="text-xs text-on-surface-variant">${doc.rating}</span></div>
+      </div>
+      <p class="text-xs text-on-surface-variant">${escapeAttr(doc.specialty + locBits + (exp ? ' · ' + exp : ''))}</p>
+      ${langBits}
+      <div class="flex items-center gap-1 mt-1">${availLabel}</div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="showBookModal('${escapeAttr(escapeJsQuoted(doc.name))}','${escapeAttr(escapeJsQuoted(doc.specialty))}','${escapeAttr(escapeJsQuoted(doc.id))}')" class="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-blue-800 transition-colors">${book}</button>
+        <button onclick="showChatModal()" class="bg-surface-container text-on-surface text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-surface-container-high transition-colors">${msg}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function updateDoctorCountBadge(count) {
+  var el = document.getElementById('doctorCount');
+  if (!el) return;
+  el.setAttribute('data-i18n-count', String(count));
+  if (typeof CareI18n !== 'undefined') {
+    el.setAttribute('data-i18n', 'consult.availableCount');
+    el.textContent = CareI18n.t('consult.availableCount', { count: count });
+  } else el.textContent = count + ' available';
+}
+
+function renderDoctors(list) {
+  document.getElementById('doctorList').innerHTML = list.map(doctorCardHTML).join('');
+  if (typeof CareI18n !== 'undefined') CareI18n.apply(document.getElementById('doctorList'));
+  updateDoctorCountBadge(list.length);
+}
+
+function applyDoctorFilters() {
+  var list = activeDoctors.slice();
+  var q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+  if (activeChipSpecialty !== 'all')
+    list = list.filter(function (d) { return d.specialtySlug === activeChipSpecialty; });
+  var nearMe = document.getElementById('filterNearMe') && document.getElementById('filterNearMe').checked;
+  if (nearMe && typeof CarePrefs !== 'undefined') {
+    var L = CarePrefs.getLocation();
+    if (L.city || L.country) {
+      var lc = (L.city || '').toLowerCase();
+      var lctr = (L.country || '').toLowerCase();
+      list = list.filter(function (d) {
+        var c = (d.city || '').toLowerCase();
+        var ctr = (d.country || '').toLowerCase();
+        var cityHit = lc && (c.indexOf(lc) !== -1 || lc.indexOf(c) !== -1);
+        var countryHit = lctr && (ctr.indexOf(lctr) !== -1 || lctr.indexOf(ctr) !== -1);
+        return cityHit || countryHit;
+      });
+    }
+  }
+  var langFilter = (document.getElementById('filterConsultLang') && document.getElementById('filterConsultLang').value) || '';
+  if (langFilter)
+    list = list.filter(function (d) {
+      return d.languageCodes && d.languageCodes.indexOf(langFilter) !== -1;
+    });
+  if (q)
+    list = list.filter(function (d) {
+      return (d.name + ' ' + d.specialty + ' ' + (d.city || '') + ' ' + (d.country || '')).toLowerCase().indexOf(q) !== -1;
+    });
+  renderDoctors(list);
+}
+
+function filterDoctorsChip(btn) {
+  document.querySelectorAll('.chip-specialty').forEach(function (c) {
+    c.classList.remove('chip-active');
+  });
+  btn.classList.add('chip-active');
+  activeChipSpecialty = btn.getAttribute('data-specialty') || 'all';
+  applyDoctorFilters();
+}
+
+function syncConsultFilterOptionLabels() {
+  var opt = document.querySelector('#filterConsultLang option[value=""]');
+  if (opt && typeof CareI18n !== 'undefined') opt.textContent = CareI18n.t('consult.consultLanguageAny');
+}
+
+// Real doctors when the backend answers; otherwise the demo list (which cannot be booked).
+var doctorsAreLive = false;
+
+async function loadSpecialists() {
+  var data = await getSpecialists();
+  if (data && Array.isArray(data) && data.length) {
+    activeDoctors = data.map(doctorFromApi);
+    doctorsAreLive = true;
+    applyDoctorFilters();
+  }
+  document.getElementById('demoDoctorsNote').classList.toggle('hidden', doctorsAreLive);
+}
+
+// ---- My appointments ---------------------------------------------------------------
+var myAppointments = null; // null = not loaded yet / failed
+
+function appointmentRowHTML(a) {
+  return '<div class="px-5 py-4 flex items-center gap-4">' +
+    '<div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-primary" aria-hidden="true">event</span></div>' +
+    '<div class="flex-1 min-w-0">' +
+      '<p class="font-medium text-sm">' + escapeHtml(a.specialist_name || '') + '</p>' +
+      '<p class="text-xs text-on-surface-variant">' + escapeHtml([a.specialty, formatDateTime(a.start_time)].filter(Boolean).join(' · ')) + '</p>' +
+      (a.reason ? '<p class="text-xs text-on-surface-variant mt-0.5 truncate">' + escapeHtml(a.reason) + '</p>' : '') +
+    '</div>' +
+    '<button type="button" data-cancel="' + escapeHtml(a.id) + '" class="text-xs font-semibold text-error px-3 py-1.5 rounded-full hover:bg-red-50">' +
+      escapeHtml(careT('consult.cancelAppointment', null, 'Cancel')) + '</button>' +
+  '</div>';
+}
+
+function renderMyAppointments(errorResult) {
+  var box = document.getElementById('myAppointments');
+  if (errorResult) box.innerHTML = stateBlockHTML('cloud_off', apiErrorText(errorResult));
+  else if (!myAppointments) box.innerHTML = stateBlockHTML('hourglass_empty', careT('common.loading', null, 'Loading...'));
+  else if (!myAppointments.length) box.innerHTML = stateBlockHTML('event_busy', careT('consult.noAppointments', null, 'No upcoming appointments. Book one below.'));
+  else box.innerHTML = myAppointments.map(appointmentRowHTML).join('');
+}
+
+async function loadMyAppointments() {
+  var result = await listAppointments();
+  if (!result.ok) { myAppointments = null; return renderMyAppointments(result); }
+  var now = Date.now();
+  myAppointments = result.data.filter(function (a) { return new Date(a.start_time).getTime() >= now - 3600000; });
+  renderMyAppointments();
+}
+
+async function onCancelAppointment(id) {
+  if (!confirm(careT('consult.cancelConfirm', null, 'Cancel this appointment?'))) return;
+  var result = await cancelAppointment(id);
+  if (result.ok || result.status === 404) {
+    showToast(careT('consult.cancelled', null, 'Appointment cancelled.'));
+    return loadMyAppointments();
+  }
+  showToast(apiErrorText(result), 'error');
+}
+
+// ---- Hand-off from the symptom check (check.html) -------------------------------
+// check.html leaves { specialistId, specialty, language, reason } in sessionStorage
+// (not localStorage: it describes symptoms and should not outlive the tab).
+var CHECK_HANDOFF_KEY = 'careconnect_check_handoff';
+var checkHandoff = null;
+
+function readCheckHandoff() {
+  try {
+    var raw = sessionStorage.getItem(CHECK_HANDOFF_KEY);
+    sessionStorage.removeItem(CHECK_HANDOFF_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function applyCheckHandoff() {
+  checkHandoff = readCheckHandoff();
+  if (!checkHandoff) return;
+  document.getElementById('checkHandoffNote').classList.remove('hidden');
+  var chip = document.querySelector('.chip-specialty[data-specialty="' + String(checkHandoff.specialty || '').replace(/[^a-z_]/g, '') + '"]');
+  if (chip) {
+    document.querySelectorAll('.chip-specialty').forEach(function (c) { c.classList.remove('chip-active'); });
+    chip.classList.add('chip-active');
+    activeChipSpecialty = chip.getAttribute('data-specialty');
+  }
+  var langEl = document.getElementById('filterConsultLang');
+  if (langEl && checkHandoff.language && langEl.querySelector('option[value="' + String(checkHandoff.language).replace(/[^a-z]/g, '') + '"]'))
+    langEl.value = checkHandoff.language;
+}
+
+// The check's filters are a starting point, not a dead end: if they leave the list
+// empty (e.g. no dermatologist speaks Turkish), widen specialty first, then language.
+function relaxHandoffFilters() {
+  var shown = function () { return document.querySelectorAll('#doctorList .doctor-card').length; };
+  if (!checkHandoff || shown()) return;
+  var all = document.querySelector('.chip-specialty[data-specialty="all"]');
+  if (all) filterDoctorsChip(all);
+  if (shown()) return;
+  document.getElementById('filterConsultLang').value = '';
+  applyDoctorFilters();
+}
+
+function openHandoffBooking() {
+  relaxHandoffFilters();
+  if (!checkHandoff || checkHandoff.specialistId == null) return;
+  var doc = activeDoctors.find(function (d) { return String(d.id) === String(checkHandoff.specialistId); });
+  checkHandoff.specialistId = null; // open once
+  if (doc) showBookModal(doc.name, doc.specialty, doc.id);
+}
+
+function initConsultLocalization() {
+  if (typeof CareI18n === 'undefined') return;
+  CareI18n.apply(document);
+  syncConsultFilterOptionLabels();
+}
+
+document.addEventListener('DOMContentLoaded', async function () {
+  var session = await requireAuth();
+  if (!session) return;
+  initConsultLocalization();
+  syncConsultFilterOptionLabels();
+  var langElBoot = document.getElementById('filterConsultLang');
+  if (
+    langElBoot &&
+    typeof CarePrefs !== 'undefined' &&
+    typeof CarePrefs.getPreferredConsultLanguage === 'function'
+  ) {
+    langElBoot.value = CarePrefs.getPreferredConsultLanguage() || '';
+  }
+  applyCheckHandoff();
+  renderDateButtons();
+  applyDoctorFilters();
+  loadSpecialists().then(openHandoffBooking);
+  renderMyAppointments();
+  loadMyAppointments();
+  document.getElementById('myAppointments').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-cancel]');
+    if (btn) onCancelAppointment(btn.dataset.cancel);
+  });
+
+  window.addEventListener('careconnect:locale', function () {
+    initConsultLocalization();
+    renderDateButtons();
+    applyDoctorFilters();
+  });
+  window.addEventListener('careconnect:redraw-dynamic', function () {
+    syncConsultFilterOptionLabels();
+    applyDoctorFilters();
+    renderMyAppointments();
+  });
+
+  var nearEl = document.getElementById('filterNearMe');
+  var langEl = document.getElementById('filterConsultLang');
+  if (nearEl) nearEl.addEventListener('change', applyDoctorFilters);
+  if (langEl) langEl.addEventListener('change', applyDoctorFilters);
+  document.getElementById('searchInput').addEventListener('input', applyDoctorFilters);
+});
+
+window.addEventListener('careconnect:location', applyDoctorFilters);
+window.addEventListener('careconnect:consultlang', applyDoctorFilters);
+
+function showBookModal(name, specialty, specialistId) {
+  selectedSpecialistId = specialistId;
+  document.getElementById('bookModalTitle').textContent =
+    (typeof CareI18n !== 'undefined' ? CareI18n.t('consult.bookWith') + ' ' : 'Book with ') + name;
+  document.getElementById('bookModalSub').textContent =
+    specialty + ' · ' + (typeof CareI18n !== 'undefined' ? CareI18n.t('consult.virtualConsultation') : 'Virtual consultation');
+  document.getElementById('bookModal').classList.remove('hidden');
+}
+
+// Next five days, labelled in the interface language.
+function renderDateButtons() {
+  var row = document.getElementById('dateButtons');
+  if (!row) return;
+  var locale = typeof CarePrefs !== 'undefined' ? CarePrefs.getLanguage() : 'en';
+  var html = '';
+  for (var i = 1; i <= 5; i++) {
+    var d = new Date();
+    d.setDate(d.getDate() + i);
+    var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    html +=
+      '<button type="button" class="date-btn ' + (i === 1 ? 'bg-primary text-white' : 'bg-surface-container') +
+      ' rounded-xl py-2 text-center" data-date="' + iso + '" onclick="selectDate(this)"><p class="text-xs">' +
+      escapeAttr(d.toLocaleDateString(locale, { weekday: 'short' })) + '</p><p class="font-bold text-sm">' + d.getDate() + '</p></button>';
+  }
+  row.innerHTML = html;
+}
+
+function selectDate(btn) {
+  document.querySelectorAll('.date-btn').forEach(b => { b.className = 'date-btn bg-surface-container rounded-xl py-2 text-center'; });
+  btn.className = 'date-btn bg-primary text-white rounded-xl py-2 text-center';
+}
+
+function selectTime(btn) {
+  document.querySelectorAll('.time-btn').forEach(b => { b.className = 'time-btn bg-surface-container text-on-surface text-sm rounded-xl py-2'; });
+  btn.className = 'time-btn bg-primary text-white text-sm rounded-xl py-2';
+}
+
+async function confirmBooking() {
+  const dateBtn = document.querySelector('.date-btn.bg-primary');
+  const timeBtn = document.querySelector('.time-btn.bg-primary');
+  const [y, m, d] = (dateBtn ? dateBtn.dataset.date : '').split('-').map(Number);
+  const hour = timeBtn ? Number(timeBtn.dataset.hour) : 9;
+  const when = y ? new Date(y, m - 1, d, hour) : new Date(Date.now() + 86400000);
+
+  if (!selectedSpecialistId) return;
+  const result = await bookAppointment({
+    specialistId: selectedSpecialistId,
+    startTime: when.toISOString(),
+    reason: (checkHandoff && checkHandoff.reason) || '',
+  });
+
+  if (result.ok) {
+    document.getElementById('bookModal').classList.add('hidden');
+    if (checkHandoff) checkHandoff.reason = '';
+    showToast(careT('consult.bookingConfirmed', null, 'Appointment booked.'));
+    loadMyAppointments();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (result.status === 409) {
+    showToast(careT('consult.bookingConflict', null, 'You already have an appointment at that time. Pick another slot.'), 'error');
+  } else if (result.status === 422) {
+    showToast(careT('consult.bookingInvalidTime', null, 'Pick a time in the future.'), 'error');
+  } else if (result.status === 404 || !doctorsAreLive) {
+    showToast(careT('consult.bookingDoctorUnavailable', null, 'This doctor cannot be booked right now.'), 'error');
+  } else {
+    showToast(apiErrorText(result), 'error');
+  }
+}
+
+function chatBubbleHTML(html, mine) {
+  return mine
+    ? '<div class="flex justify-end"><div class="bg-primary text-white rounded-2xl rounded-tr-none px-4 py-2 max-w-xs">' + html + '</div></div>'
+    : '<div class="flex gap-2"><div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center mt-1 shrink-0" aria-hidden="true"><span class="material-symbols-outlined text-base">smart_toy</span></div>' +
+      '<div class="bg-surface-container rounded-2xl rounded-tl-none px-4 py-2 max-w-xs">' + html + '</div></div>';
+}
+
+function showChatModal() {
+  var msgs = document.getElementById('chatMessages');
+  if (!msgs.children.length)
+    msgs.innerHTML = chatBubbleHTML('<p class="text-sm">' + escapeHtml(careT('consult.assistantGreeting', null, 'Hello. Tell me what is bothering you and I will suggest a next step.')) + '</p>', false);
+  if (typeof CareI18n !== 'undefined') CareI18n.apply(document.getElementById('chatModal'));
+  document.getElementById('chatModal').classList.remove('hidden');
+  document.getElementById('chatInput').focus();
+}
+
+// AI-powered chat — calls /api/ai_assistant/chat with emergency safety check
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  var t = typeof CareI18n !== 'undefined' ? CareI18n.t.bind(CareI18n) : function (k) { return k; };
+
+  const msgs = document.getElementById('chatMessages');
+  const add = function (html, mine) {
+    msgs.insertAdjacentHTML('beforeend', chatBubbleHTML(html, mine));
+    msgs.scrollTop = msgs.scrollHeight;
+  };
+  add('<p class="text-sm">' + escapeHtml(msg) + '</p>', true);
+  input.value = '';
+
+  // Client-side emergency check first (mirrors backend/utils/safety.py): no waiting on a network call.
+  if (checkEmergencySymptoms(msg).isEmergency) {
+    msgs.insertAdjacentHTML('beforeend',
+      '<div class="flex gap-2" role="alert"><div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mt-1 shrink-0"><span class="material-symbols-outlined text-red-500 text-sm" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">emergency</span></div>' +
+      '<div class="bg-red-50 border border-red-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-xs"><p class="text-sm text-red-700 font-semibold">' + escapeHtml(t('consult.urgentTitle')) + '</p>' +
+      '<p class="text-xs text-red-700 mt-1">' + escapeHtml(t('consult.urgentCall')) + '</p>' +
+      '<a href="tel:112" class="inline-flex items-center gap-1 mt-2 bg-error text-white text-xs font-bold px-4 py-2 rounded-full"><span class="material-symbols-outlined text-sm" aria-hidden="true">call</span>' + escapeHtml(t('emergency.call112')) + '</a></div></div>');
+    msgs.scrollTop = msgs.scrollHeight;
+    return;
+  }
+
+  const typingId = 'typing-' + Date.now();
+  msgs.insertAdjacentHTML('beforeend', '<div id="' + typingId + '">' + chatBubbleHTML('<p class="text-sm text-slate-400">' + escapeHtml(t('consult.typing')) + '</p>', false) + '</div>');
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const result = await aiChat(msg);
+  document.getElementById(typingId)?.remove();
+
+  if (!result) {
+    return add('<p class="text-sm">' + escapeHtml(careT('consult.assistantUnavailable', null, 'The assistant is unavailable right now. You can book a doctor below, or use SOS in an emergency.')) + '</p>', false);
+  }
+  var html = '<p class="text-sm whitespace-pre-line">' + escapeHtml(result.message || '') + '</p>';
+  if (result.risk_level && result.risk_level !== 'low')
+    html += '<span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ' + riskBadgeClass(result.risk_level) + '">' +
+      escapeHtml(careT('consult.risk.' + result.risk_level, null, result.risk_level.toUpperCase())) + '</span>';
+  if (result.source !== 'openai' && result.recommendation !== 'emergency')
+    html += '<p class="text-[11px] text-on-surface-variant mt-1">' + escapeHtml(careT('consult.builtInReply', null, 'Standard reply (the AI model is not available right now).')) + '</p>';
+  if (result.recommendation === 'emergency')
+    html += '<a href="tel:112" class="inline-flex items-center gap-1 mt-2 bg-error text-white text-xs font-bold px-4 py-2 rounded-full"><span class="material-symbols-outlined text-sm" aria-hidden="true">call</span>' + escapeHtml(t('emergency.call112')) + '</a>';
+  add(html, false);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - Subscription Plans</title>
+<script src="vendor/tailwind-play-forms-cq.js"></script>
+<script src="vendor/supabase-js.umd.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary-container":"#007354","on-primary":"#ffffff","on-tertiary":"#ffffff","secondary-fixed-dim":"#62dcaf","background":"#f7f9fb","on-primary-fixed-variant":"#00419c","inverse-on-surface":"#eff1f3","tertiary":"#2724b8","on-error-container":"#93000a","on-primary-fixed":"#001945","surface-container-high":"#e6e8ea","primary-fixed":"#d9e2ff","on-tertiary-fixed":"#07006c","outline":"#737784","on-primary-container":"#bcceff","error":"#ba1a1a","surface-container-low":"#f2f4f6","surface-tint":"#1d59c1","tertiary-fixed":"#e1e0ff","on-surface-variant":"#434653","inverse-surface":"#2d3133","error-container":"#ffdad6","on-surface":"#191c1e","secondary":"#006c4f","on-background":"#191c1e","secondary-fixed":"#80f9ca","on-tertiary-fixed-variant":"#2f2ebe","on-secondary":"#ffffff","surface-dim":"#d8dadc","on-secondary-fixed-variant":"#00513b","surface-bright":"#f7f9fb","on-tertiary-container":"#c9caff","on-secondary-fixed":"#002116","tertiary-fixed-dim":"#c0c1ff","surface":"#f7f9fb","primary-container":"#0f52ba","outline-variant":"#c3c6d5","primary":"#003c90","surface-container":"#eceef0","tertiary-container":"#4243cf","on-error":"#ffffff","primary-fixed-dim":"#b0c6ff","surface-variant":"#e0e3e5","secondary-container":"#80f9ca","inverse-primary":"#b0c6ff","surface-container-highest":"#e0e3e5","surface-container-lowest":"#ffffff"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{lg:"24px",xs:"8px",xl:"32px",sm:"12px",gutter:"16px",base:"4px",margin:"20px",md:"16px"},fontFamily:{"body-lg":["Public Sans"],"body-md":["Public Sans"],"h3":["Manrope"],"body-sm":["Public Sans"],"h2":["Manrope"],"label-caps":["Public Sans"],"h1":["Manrope"],"button":["Public Sans"]},fontSize:{"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],"h3":["20px",{"lineHeight":"28px","fontWeight":"600"}],"body-sm":["14px",{"lineHeight":"20px","fontWeight":"400"}],"h2":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-caps":["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],"h1":["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],"button":["16px",{"lineHeight":"20px","fontWeight":"600"}]}}}}
+</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  body{min-height:max(884px,100dvh)}
+  .pro-lustre{position:relative}
+  .pro-lustre::after{content:'';position:absolute;inset:-1px;padding:1px;background:linear-gradient(135deg,#2724b8,#ffffff);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;border-radius:1.5rem;pointer-events:none}
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <div class="relative">
+      <img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0Lc_0jsybCfzyWC41Q4hAFR_6wQJLCGyIR4W40-LbIiJyXx6-7zuFeyh8tYzz6o-FahtkCy4diZYBuqX5M37rFUVEYYE8vwqYoFmWxaXgL_y-46Gs_3vJtutZEDBx6R7jUfUhWV_RbykByBLdaLnSnrujUKmaAlZ6wj1pAcj7sqvK1cSyodWLwmt6BJKt-b1bokZ3Lr0lulK2ritYVzzUyLInFSYO4i9Ar7IYrdBt0mW1AWdwLe20O9kkN4j4lXSN0W_WfZnIcxk"/>
+      <div class="absolute -bottom-1 -right-1 bg-tertiary text-[8px] text-white px-1 rounded-full font-bold uppercase tracking-widest border border-white">Pro</div>
+    </div>
+    <span class="text-lg font-bold tracking-tight text-blue-800">CareConnect</span>
+  </div>
+  <button onclick="window.location='sos.html'" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">emergency</span>
+  </button>
+</header>
+
+<main class="pt-24 px-gutter max-w-5xl mx-auto">
+
+  <!-- Toggle -->
+  <section class="mb-xl text-center">
+    <h1 class="font-h1 text-h1 text-primary mb-xs">Choose Your Care Plan</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-6">Transparent healthcare tailored to your life.</p>
+    <div class="inline-flex bg-surface-container rounded-full p-1">
+      <button id="monthlyBtn" onclick="setBilling('monthly')" class="px-5 py-2 rounded-full bg-primary text-white text-sm font-semibold transition-all">Monthly</button>
+      <button id="annualBtn" onclick="setBilling('annual')" class="px-5 py-2 rounded-full text-on-surface text-sm font-semibold transition-all">Annual <span class="text-green-600 font-bold">-20%</span></button>
+    </div>
+  </section>
+
+  <p class="text-center text-sm text-on-surface-variant bg-surface-container rounded-2xl px-4 py-3 mb-6" data-i18n="plans.demoNote">Demo: choosing a plan records it on your account. No payment is taken and nothing is charged.</p>
+
+  <!-- Plans Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-xl">
+
+    <!-- Basic -->
+    <div class="bg-surface-container-lowest rounded-3xl p-lg border border-slate-100 flex flex-col shadow-sm transition-transform hover:scale-[1.02] duration-300">
+      <div class="mb-md">
+        <span class="font-label-caps text-label-caps text-on-secondary-container bg-secondary-container px-3 py-1 rounded-full">Essential</span>
+        <h2 class="font-h2 text-h2 mt-sm">Basic</h2>
+        <div class="flex items-baseline gap-1 mt-xs">
+          <span class="font-h1 text-h1 price-display" data-monthly="29" data-annual="23">$29</span>
+          <span class="font-body-sm text-on-surface-variant period-label">/mo</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1 annual-note hidden">$276/year — save $72</p>
+      </div>
+      <ul class="space-y-md mb-xl flex-grow">
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span><span class="font-body-sm">Standard Virtual Visits</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span><span class="font-body-sm">E-Prescriptions</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span><span class="font-body-sm">Basic Medical Records</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-slate-300 text-lg">cancel</span><span class="font-body-sm text-slate-300">24/7 Priority Access</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-slate-300 text-lg">cancel</span><span class="font-body-sm text-slate-300">Health Coach</span></li>
+      </ul>
+      <button onclick="selectPlan('basic')" data-plan="basic" class="w-full bg-surface-container text-on-surface font-button py-3 rounded-full hover:bg-surface-container-high transition-colors active:scale-95">Select Plan</button>
+    </div>
+
+    <!-- Pro (Featured) -->
+    <div class="pro-lustre bg-white rounded-3xl p-lg flex flex-col shadow-xl scale-105 z-10 relative overflow-hidden border-2 border-transparent">
+      <div class="absolute top-4 right-4 bg-[#FFD700] text-on-surface px-3 py-1 rounded-full text-[10px] font-bold tracking-widest flex items-center gap-1 shadow-sm">
+        <span class="material-symbols-outlined text-[12px]" style="font-variation-settings:'FILL' 1">star</span>PRO
+      </div>
+      <div class="mb-md">
+        <span class="font-label-caps text-label-caps text-on-tertiary-container bg-tertiary-container/10 px-3 py-1 rounded-full">Most Popular</span>
+        <h2 class="font-h2 text-h2 mt-sm text-tertiary">Pro</h2>
+        <div class="flex items-baseline gap-1 mt-xs">
+          <span class="font-h1 text-h1 text-tertiary price-display" data-monthly="59" data-annual="47">$59</span>
+          <span class="font-body-sm text-on-surface-variant period-label">/mo</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1 annual-note hidden">$564/year — save $144</p>
+      </div>
+      <ul class="space-y-md mb-xl flex-grow">
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings:'FILL' 1">bolt</span><div class="flex flex-col"><span class="font-button text-tertiary">24/7 Priority Access</span><span class="text-[12px] text-on-surface-variant">Connect in &lt; 2 minutes</span></div></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings:'FILL' 1">monetization_on</span><div class="flex flex-col"><span class="font-button text-tertiary">$0 Copayments</span><span class="text-[12px] text-on-surface-variant">Unlimited consultations</span></div></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings:'FILL' 1">workspace_premium</span><span class="font-body-sm">Dedicated Health Coach</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings:'FILL' 1">chat_bubble</span><span class="font-body-sm">Direct Specialist Chat</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-tertiary text-lg" style="font-variation-settings:'FILL' 1">lab_panel</span><span class="font-body-sm">Unlimited Lab Orders</span></li>
+      </ul>
+      <button onclick="selectPlan('pro')" data-plan="pro" class="w-full bg-tertiary text-white font-button py-4 rounded-full shadow-lg hover:shadow-xl transition-all active:scale-95">Upgrade to Pro</button>
+    </div>
+
+    <!-- Family -->
+    <div class="bg-surface-container-lowest rounded-3xl p-lg border border-slate-100 flex flex-col shadow-sm transition-transform hover:scale-[1.02] duration-300">
+      <div class="mb-md">
+        <span class="font-label-caps text-label-caps text-on-primary-container bg-primary-container/10 px-3 py-1 rounded-full">Household</span>
+        <h2 class="font-h2 text-h2 mt-sm">Family</h2>
+        <div class="flex items-baseline gap-1 mt-xs">
+          <span class="font-h1 text-h1 price-display" data-monthly="99" data-annual="79">$99</span>
+          <span class="font-body-sm text-on-surface-variant period-label">/mo</span>
+        </div>
+        <p class="text-xs text-on-surface-variant mt-1 annual-note hidden">$948/year — save $240</p>
+      </div>
+      <ul class="space-y-md mb-xl flex-grow">
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">group</span><span class="font-body-sm">Up to 6 Family Members</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">child_care</span><span class="font-body-sm">Pediatric Care Priority</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">vaccines</span><span class="font-body-sm">Home Lab Collections</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">workspace_premium</span><span class="font-body-sm">All Pro Features Included</span></li>
+        <li class="flex items-start gap-3"><span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">local_pharmacy</span><span class="font-body-sm">Free Medication Delivery</span></li>
+      </ul>
+      <button onclick="selectPlan('family')" data-plan="family" class="w-full bg-primary text-white font-button py-3 rounded-full hover:bg-blue-800 transition-colors active:scale-95">Select Plan</button>
+    </div>
+  </div>
+
+  <!-- Trust Section -->
+  <section class="mb-xl grid grid-cols-1 md:grid-cols-2 gap-gutter">
+    <div class="bg-blue-50/50 rounded-3xl p-xl flex items-center gap-gutter border border-blue-100/50">
+      <div class="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings:'FILL' 1">security</span>
+      </div>
+      <div>
+        <h3 class="font-h3 text-h3 text-primary mb-1">HIPAA Compliant</h3>
+        <p class="font-body-sm text-on-surface-variant">Your medical data is encrypted with military-grade standards and never shared.</p>
+      </div>
+    </div>
+    <div class="bg-emerald-50/50 rounded-3xl p-xl flex items-center gap-gutter border border-emerald-100/50">
+      <div class="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+        <span class="material-symbols-outlined text-on-secondary-container text-4xl" style="font-variation-settings:'FILL' 1">medical_services</span>
+      </div>
+      <div>
+        <h3 class="font-h3 text-h3 text-on-secondary-container mb-1">Board Certified</h3>
+        <p class="font-body-sm text-on-surface-variant">Every doctor is thoroughly vetted with 10+ years experience.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero Image -->
+  <section class="mb-xl overflow-hidden rounded-3xl h-64 relative">
+    <img alt="Healthcare Professional" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6Mq16KGgpiV-XWV1sBFQ77xivTrSdH3dWm3ZTTDIgFuFtzXMjAw8T7Cu-YDQi4ltybbxSjARAQumbU65HlWFXw0WAEJBi_wA5bJ-8FZnpKU0mA8otDCe_O1KqApkM3UuSsptSo5Aa3sL1s7zXzmhwIbFy4al-bewdiT4r32ujDCkkNr9Fi3890CSuVfjbIrNXi1P1OzKqrI1N9wo_iOVyeo8G7FDVMSPs4dqLjjzJatnRH0pAwyF8hyruAFAgg0UBS5LmfRpXM7Y"/>
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-900/40 to-transparent flex items-center p-xl">
+      <div class="max-w-md text-white">
+        <h2 class="font-h2 text-h2 mb-2">Expert care, anywhere.</h2>
+        <p class="font-body-md">Join over 120,000 members receiving personalized attention today.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Plan Confirmation Modal -->
+<div id="planModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl w-full max-w-sm p-6 text-center space-y-4">
+    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+      <span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings:'FILL' 1">check_circle</span>
+    </div>
+    <h2 class="font-bold text-xl" id="planModalTitle"></h2>
+    <p class="text-sm text-on-surface-variant" id="planModalSub"></p>
+    <button onclick="document.getElementById('planModal').classList.add('hidden');window.location='index.html'" class="w-full bg-primary text-white font-semibold py-3 rounded-full hover:bg-blue-800 transition-colors">Go to Dashboard</button>
+    <button type="button" onclick="document.getElementById('planModal').classList.add('hidden')" class="w-full text-on-surface-variant text-sm" data-i18n="common.close">Close</button>
+  </div>
+</div>
+
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span data-i18n="nav.home">Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span data-i18n="nav.consult">Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span data-i18n="nav.pharmacy">Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span data-i18n="nav.profile">Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span data-i18n="nav.sos">SOS</span>
+  </a>
+</nav>
+
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/pages/plans.js"></script>
+</body>
+</html>

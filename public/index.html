@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - Home</title>
+<script src="vendor/tailwind-play-forms-cq.js"></script>
+<script src="vendor/supabase-js.umd.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-secondary-container": "#007354","on-primary": "#ffffff","on-tertiary": "#ffffff",
+        "secondary-fixed-dim": "#62dcaf","background": "#f7f9fb","on-primary-fixed-variant": "#00419c",
+        "inverse-on-surface": "#eff1f3","tertiary": "#2724b8","on-error-container": "#93000a",
+        "on-primary-fixed": "#001945","surface-container-high": "#e6e8ea","primary-fixed": "#d9e2ff",
+        "on-tertiary-fixed": "#07006c","outline": "#737784","on-primary-container": "#bcceff",
+        "error": "#ba1a1a","surface-container-low": "#f2f4f6","surface-tint": "#1d59c1",
+        "tertiary-fixed": "#e1e0ff","on-surface-variant": "#434653","inverse-surface": "#2d3133",
+        "error-container": "#ffdad6","on-surface": "#191c1e","secondary": "#006c4f",
+        "on-background": "#191c1e","secondary-fixed": "#80f9ca","on-tertiary-fixed-variant": "#2f2ebe",
+        "on-secondary": "#ffffff","surface-dim": "#d8dadc","on-secondary-fixed-variant": "#00513b",
+        "surface-bright": "#f7f9fb","on-tertiary-container": "#c9caff","on-secondary-fixed": "#002116",
+        "tertiary-fixed-dim": "#c0c1ff","surface": "#f7f9fb","primary-container": "#0f52ba",
+        "outline-variant": "#c3c6d5","primary": "#003c90","surface-container": "#eceef0",
+        "tertiary-container": "#4243cf","on-error": "#ffffff","primary-fixed-dim": "#b0c6ff",
+        "surface-variant": "#e0e3e5","secondary-container": "#80f9ca","inverse-primary": "#b0c6ff",
+        "surface-container-highest": "#e0e3e5","surface-container-lowest": "#ffffff"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { lg: "24px", xs: "8px", xl: "32px", sm: "12px", gutter: "16px", base: "4px", margin: "20px", md: "16px" },
+      fontFamily: { "body-lg": ["Public Sans"],"body-md": ["Public Sans"],"h3": ["Manrope"],"body-sm": ["Public Sans"],"h2": ["Manrope"],"label-caps": ["Public Sans"],"h1": ["Manrope"],"button": ["Public Sans"] },
+      fontSize: {
+        "body-lg": ["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "body-md": ["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "h3": ["20px",{"lineHeight":"28px","fontWeight":"600"}],
+        "body-sm": ["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "h2": ["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],
+        "label-caps": ["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],
+        "h1": ["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],
+        "button": ["16px",{"lineHeight":"20px","fontWeight":"600"}]
+      }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { min-height: max(884px, 100dvh); }
+  .ring-pulse { animation: ringpulse 2s infinite; }
+  @keyframes ringpulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(186,26,26,0.4); } 50%{ box-shadow: 0 0 0 8px rgba(186,26,26,0); } }
+  .health-ring { stroke-dasharray: 220; stroke-dashoffset: 55; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-24">
+
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white dark:bg-slate-950 font-manrope antialiased border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <a href="profile.html" id="homeAvatar" class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center font-bold text-sm" data-i18n-aria="nav.profile" aria-label="Profile"></a>
+    <span class="text-lg font-bold tracking-tight text-blue-800">CareConnect</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <label class="sr-only" for="careHeaderLang" data-i18n="profile.interfaceLanguage">Interface language</label>
+    <select id="careHeaderLang" aria-label="Interface language" title="Interface language" class="text-xs border border-slate-200 rounded-lg px-1.5 py-1 bg-white text-on-surface w-[4.25rem] shrink-0 cursor-pointer">
+      <option value="en">EN</option>
+      <option value="de">DE</option>
+      <option value="tr">TR</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+    </select>
+    <button onclick="document.getElementById('notifPanel').classList.toggle('hidden')" class="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 transition-colors relative">
+      <span class="material-symbols-outlined">notifications</span>
+      <span id="notifDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+    </button>
+    <button onclick="window.location='sos.html'" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50 transition-colors ring-pulse">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emergency</span>
+    </button>
+  </div>
+</header>
+
+<!-- Notification Panel -->
+<div id="notifPanel" class="hidden fixed top-16 right-4 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+  <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+    <span class="font-semibold text-on-surface" data-i18n="home.notifications">Notifications</span>
+    <button onclick="document.getElementById('notifPanel').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined text-lg">close</span></button>
+  </div>
+  <div id="notifList" class="divide-y divide-slate-50"></div>
+</div>
+
+<main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
+
+  <!-- Welcome Hero -->
+  <div class="bg-gradient-to-br from-primary to-blue-700 rounded-3xl p-6 text-white relative overflow-hidden">
+    <div class="absolute -right-8 -top-8 w-40 h-40 bg-white/5 rounded-full"></div>
+    <div class="absolute -right-4 bottom-4 w-24 h-24 bg-white/5 rounded-full"></div>
+    <p class="text-blue-200 text-sm font-medium" data-i18n="home.goodMorning">Good morning,</p>
+    <h1 id="homeName" class="text-2xl font-bold mt-1"></h1>
+    <p id="homeDate" class="text-blue-200 text-sm mt-1"></p>
+    <div class="mt-4 flex items-center gap-3 bg-white/10 rounded-2xl px-4 py-3">
+      <span class="material-symbols-outlined text-yellow-300" style="font-variation-settings: 'FILL' 1;">favorite</span>
+      <div>
+        <p class="text-xs text-blue-200"><span data-i18n="home.healthScore">Health Score</span> · <span data-i18n="common.sampleData">Sample data</span></p>
+        <p class="text-lg font-bold">87 / 100 <span class="text-sm font-normal text-green-300">↑ +3 this week</span></p>
+      </div>
+      <div class="ml-auto">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="6"/>
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#86efac" stroke-width="6" class="health-ring" transform="rotate(-90 28 28)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Symptom check: the front door to care -->
+  <a href="check.html" class="flex items-center gap-4 bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+    <div class="w-12 h-12 bg-secondary-container rounded-2xl flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined text-on-secondary-container text-2xl" aria-hidden="true">stethoscope</span>
+    </div>
+    <div class="flex-1">
+      <h2 class="font-semibold text-on-surface" data-i18n="home.checkCardTitle">Not feeling well?</h2>
+      <p class="text-sm text-on-surface-variant mt-0.5" data-i18n="home.checkCardBody">Check your symptoms and get matched with a doctor who speaks your language.</p>
+      <p class="text-sm text-primary font-semibold mt-2" data-i18n="home.checkCardCta">Start symptom check</p>
+    </div>
+    <span class="material-symbols-outlined text-slate-400" aria-hidden="true">chevron_right</span>
+  </a>
+
+  <!-- Quick Stats -->
+  <div class="grid grid-cols-3 gap-3">
+    <div class="bg-surface-container-lowest rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
+      <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">event</span>
+      <p id="statAppointments" class="text-xl font-bold text-on-surface mt-1">–</p>
+      <p class="text-xs text-on-surface-variant" data-i18n="home.upcoming">Upcoming</p>
+    </div>
+    <div class="bg-surface-container-lowest rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
+      <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">medication</span>
+      <p id="statMedications" class="text-xl font-bold text-on-surface mt-1">–</p>
+      <p class="text-xs text-on-surface-variant" data-i18n="home.medications">Medications</p>
+    </div>
+    <div class="bg-surface-container-lowest rounded-2xl p-4 text-center border border-slate-100 shadow-sm">
+      <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+      <p id="statOrders" class="text-xl font-bold text-on-surface mt-1">–</p>
+      <p class="text-xs text-on-surface-variant" data-i18n="home.openOrders">Open orders</p>
+    </div>
+  </div>
+
+  <!-- Next Appointment -->
+  <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h2 class="font-semibold text-on-surface" data-i18n="home.nextAppointment">Next Appointment</h2>
+      <a href="consult.html" class="text-sm text-primary font-medium" data-i18n="home.seeAll">See all</a>
+    </div>
+    <div id="nextAppointment"></div>
+  </div>
+
+  <!-- Health Vitals -->
+  <div>
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="font-semibold text-on-surface" data-i18n="home.vitalsToday">Today's Vitals</h2>
+      <span class="text-[11px] font-semibold uppercase tracking-wide bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full" data-i18n="common.sampleData">Sample data</span>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-red-50 rounded-2xl p-4 border border-red-100">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-red-500 text-xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+          <span class="text-xs text-red-400 font-medium uppercase tracking-wide">Heart Rate</span>
+        </div>
+        <p class="text-2xl font-bold text-red-600">72 <span class="text-sm font-normal">bpm</span></p>
+        <p class="text-xs text-red-400 mt-1">Normal range</p>
+      </div>
+      <div class="bg-blue-50 rounded-2xl p-4 border border-blue-100">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-blue-500 text-xl" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
+          <span class="text-xs text-blue-400 font-medium uppercase tracking-wide">Blood Pressure</span>
+        </div>
+        <p class="text-2xl font-bold text-blue-600">118/76 <span class="text-sm font-normal">mmHg</span></p>
+        <p class="text-xs text-blue-400 mt-1">Optimal</p>
+      </div>
+      <div class="bg-green-50 rounded-2xl p-4 border border-green-100">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-green-500 text-xl" style="font-variation-settings: 'FILL' 1;">steps</span>
+          <span class="text-xs text-green-400 font-medium uppercase tracking-wide">Steps</span>
+        </div>
+        <p class="text-2xl font-bold text-green-600">6,842 <span class="text-sm font-normal">steps</span></p>
+        <p class="text-xs text-green-400 mt-1">68% of goal</p>
+      </div>
+      <div class="bg-purple-50 rounded-2xl p-4 border border-purple-100">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="material-symbols-outlined text-purple-500 text-xl" style="font-variation-settings: 'FILL' 1;">bedtime</span>
+          <span class="text-xs text-purple-400 font-medium uppercase tracking-wide">Sleep</span>
+        </div>
+        <p class="text-2xl font-bold text-purple-600">7.2 <span class="text-sm font-normal">hrs</span></p>
+        <p class="text-xs text-purple-400 mt-1">Good quality</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div>
+    <h2 class="font-semibold text-on-surface mb-3" data-i18n="home.quickActions">Quick Actions</h2>
+    <div class="grid grid-cols-4 gap-3">
+      <a href="consult.html" class="flex flex-col items-center gap-2 bg-surface-container-lowest rounded-2xl p-3 border border-slate-100 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">video_chat</span>
+        </div>
+        <span class="text-xs text-on-surface-variant text-center leading-tight" data-i18n="home.bookVisit">Book Visit</span>
+      </a>
+      <a href="pharmacy.html" class="flex flex-col items-center gap-2 bg-surface-container-lowest rounded-2xl p-3 border border-slate-100 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">prescriptions</span>
+        </div>
+        <span class="text-xs text-on-surface-variant text-center leading-tight" data-i18n="home.refillRx">Refill Rx</span>
+      </a>
+      <a href="consult.html#lab" class="flex flex-col items-center gap-2 bg-surface-container-lowest rounded-2xl p-3 border border-slate-100 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings: 'FILL' 1;">lab_panel</span>
+        </div>
+        <span class="text-xs text-on-surface-variant text-center leading-tight" data-i18n="home.labTests">Lab Tests</span>
+      </a>
+      <a href="sos.html" class="flex flex-col items-center gap-2 bg-red-50 rounded-2xl p-3 border border-red-100 hover:shadow-md transition-shadow">
+        <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+          <span class="material-symbols-outlined text-red-500 text-2xl" style="font-variation-settings: 'FILL' 1;">emergency</span>
+        </div>
+        <span class="text-xs text-red-400 text-center leading-tight font-medium" data-i18n="home.sos">SOS</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Medication Reminders -->
+  <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm">
+    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h2 class="font-semibold text-on-surface" data-i18n="home.medicationsToday">Medication Today</h2>
+      <a href="pharmacy.html" class="text-sm text-primary font-medium" data-i18n="home.manage">Manage</a>
+    </div>
+    <div id="medsToday" class="divide-y divide-slate-50"></div>
+  </div>
+
+  <!-- Health Tips -->
+  <div>
+    <h2 class="font-semibold text-on-surface mb-3" data-i18n="home.healthTips">Health Tips</h2>
+    <div class="space-y-3">
+      <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100 flex gap-4">
+        <span class="material-symbols-outlined text-secondary text-3xl mt-1" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+        <div>
+          <p class="font-semibold text-sm text-on-surface">Stay Hydrated</p>
+          <p class="text-xs text-on-surface-variant mt-1">Aim for about eight glasses of water through the day.</p>
+        </div>
+      </div>
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100 flex gap-4">
+        <span class="material-symbols-outlined text-primary text-3xl mt-1" style="font-variation-settings: 'FILL' 1;">self_improvement</span>
+        <div>
+          <p class="font-semibold text-sm text-on-surface">Mindfulness Moment</p>
+          <p class="text-xs text-on-surface-variant mt-1">5 minutes of deep breathing can lower your heart rate by up to 10 bpm.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md font-manrope text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-blue-700 bg-blue-50 rounded-xl px-3 py-1">
+    <span class="material-symbols-outlined text-2xl mb-1" style="font-variation-settings: 'FILL' 1;">home_health</span><span data-i18n="nav.home">Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span data-i18n="nav.consult">Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span data-i18n="nav.pharmacy">Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span data-i18n="nav.profile">Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span data-i18n="nav.sos">SOS</span>
+  </a>
+</nav>
+
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/pages/home.js"></script>
+</body>
+</html>

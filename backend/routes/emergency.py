@@ -1,30 +1,21 @@
 from __future__ import annotations
 
-import uuid
+from fastapi import APIRouter, Depends
 
-from fastapi import APIRouter
-
-from backend.database import db
-from backend.models.schemas import EmergencyEndRequest, EmergencySession, EmergencyStartRequest
+from backend.models.schemas import EmergencyAlert, EmergencyEndRequest, EmergencyStartRequest
+from backend.store import Store, get_store
 
 router = APIRouter()
 
 
-@router.post("/emergency/start", response_model=EmergencySession)
-def start_emergency(body: EmergencyStartRequest):
-    doctor_id = db.next_emergency_doctor_id()
-    if doctor_id is None:
-        doctor_id = 1
-    wait = db.estimate_wait_minutes()
-    return EmergencySession(
-        session_id=uuid.uuid4().hex,
-        doctor_id=doctor_id,
-        status="waiting",
-        estimated_wait_minutes=wait,
-        video_url="https://example.com/mock-video-room",
-    )
+# Records that the person pressed SOS. It does NOT contact emergency services
+# (`dispatched` is always false); the page must tell them to call 112 themselves.
+@router.post("/emergency/start", response_model=EmergencyAlert, status_code=201)
+def start_emergency(body: EmergencyStartRequest, store: Store = Depends(get_store)):
+    location = body.location.model_dump(exclude_none=True) if body.location else None
+    return store.start_alert(body.symptoms, body.preferred_language, location or None)
 
 
-@router.post("/emergency/end")
-def end_emergency(body: EmergencyEndRequest):
-    return {"ok": True, "session_id": body.session_id}
+@router.post("/emergency/end", response_model=EmergencyAlert)
+def end_emergency(body: EmergencyEndRequest, store: Store = Depends(get_store)):
+    return store.end_alert(body.alert_id)

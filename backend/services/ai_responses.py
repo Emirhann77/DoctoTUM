@@ -4,6 +4,7 @@ AI assistant: uses OpenAI when OPENAI_API_KEY is set; otherwise deterministic mo
 
 from __future__ import annotations
 
+import logging
 import os
 import random
 import re
@@ -14,8 +15,13 @@ import httpx
 from backend.models.schemas import AIChatResponse, TriageResponse
 from backend.utils import safety
 
+log = logging.getLogger("careconnect.ai")
 
-def _openai_chat_completion(user_message: str) -> Optional[str]:
+
+_REPLY_LANGUAGES = {"en": "English", "de": "German", "tr": "Turkish", "es": "Spanish", "fr": "French"}
+
+
+def _openai_chat_completion(user_message: str, language: Optional[str] = None) -> Optional[str]:
     key = (os.getenv("OPENAI_API_KEY") or "").strip()
     if not key:
         return None
@@ -36,7 +42,13 @@ def _openai_chat_completion(user_message: str) -> Optional[str]:
                             "content": (
                                 "You are a cautious medical triage assistant for a telehealth app. "
                                 "Do not diagnose. Give short, clear guidance. "
-                                "If symptoms sound severe or emergency-like, tell the user to seek urgent care."
+                                "If symptoms sound severe or emergency-like, tell the user to seek urgent care. "
+                                "The user is in Germany/the EU: the emergency number is 112 (never say 911)."
+                                + (
+                                    f" Reply in {_REPLY_LANGUAGES[language]}."
+                                    if language in _REPLY_LANGUAGES
+                                    else ""
+                                )
                             ),
                         },
                         {"role": "user", "content": user_message},
@@ -48,7 +60,16 @@ def _openai_chat_completion(user_message: str) -> Optional[str]:
             r.raise_for_status()
             data = r.json()
             return data["choices"][0]["message"]["content"].strip()
-    except Exception:
+    except httpx.HTTPStatusError as exc:
+        # Not swallowed silently: an exhausted or invalid key should be visible to whoever runs the server.
+        try:
+            code = (exc.response.json().get("error") or {}).get("code")
+        except ValueError:
+            code = None
+        log.warning("OpenAI request failed: HTTP %s %s; using the built-in reply", exc.response.status_code, code or "")
+        return None
+    except Exception as exc:
+        log.warning("OpenAI request failed: %s; using the built-in reply", type(exc).__name__)
         return None
 
 
@@ -106,7 +127,7 @@ def _mock_chat_reply(user_message: str) -> AIChatResponse:
     )
 
 
-def chat(user_message: str, user_id: Optional[int]) -> AIChatResponse:
+def chat(user_message: str, language: Optional[str] = None) -> AIChatResponse:
     er = safety.check_emergency_symptoms(user_message)
     if er.is_emergency:
         em = safety.emergency_message()
@@ -116,7 +137,7 @@ def chat(user_message: str, user_id: Optional[int]) -> AIChatResponse:
             recommendation=em["recommendation"],
         )
 
-    live = _openai_chat_completion(user_message)
+    live = _openai_chat_completion(user_message, language)
     if live:
         lower = user_message.lower()
         if any(w in lower for w in ("chest", "breath", "severe", "fever", "bleed", "suicid")):
@@ -125,7 +146,7 @@ def chat(user_message: str, user_id: Optional[int]) -> AIChatResponse:
         else:
             risk = "low"
             rec = "self_monitor"
-        return AIChatResponse(risk_level=risk, message=live, recommendation=rec)
+        return AIChatResponse(risk_level=risk, message=live, recommendation=rec, source="openai")
     return _mock_chat_reply(user_message)
 
 

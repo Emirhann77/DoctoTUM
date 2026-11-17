@@ -153,6 +153,7 @@ vite.config.ts.timestamp-*
 .vite/
 .vercel
 
-# Copied into public/ by scripts/sync-public.mjs (sources: *.html and js/ at repo root)
-public/*.html
-public/js/
+.pytest_cache/
+
+# local browser-test helper (never commit)
+public/__e2e*

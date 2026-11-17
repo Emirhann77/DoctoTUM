@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareConnect - Symptom check</title>
+<script src="vendor/tailwind-play-forms-cq.js"></script>
+<script src="vendor/supabase-js.umd.js"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-secondary-container": "#007354","on-primary": "#ffffff","on-tertiary": "#ffffff",
+        "secondary-fixed-dim": "#62dcaf","background": "#f7f9fb","on-primary-fixed-variant": "#00419c",
+        "inverse-on-surface": "#eff1f3","tertiary": "#2724b8","on-error-container": "#93000a",
+        "on-primary-fixed": "#001945","surface-container-high": "#e6e8ea","primary-fixed": "#d9e2ff",
+        "on-tertiary-fixed": "#07006c","outline": "#737784","on-primary-container": "#bcceff",
+        "error": "#ba1a1a","surface-container-low": "#f2f4f6","surface-tint": "#1d59c1",
+        "tertiary-fixed": "#e1e0ff","on-surface-variant": "#434653","inverse-surface": "#2d3133",
+        "error-container": "#ffdad6","on-surface": "#191c1e","secondary": "#006c4f",
+        "on-background": "#191c1e","secondary-fixed": "#80f9ca","on-tertiary-fixed-variant": "#2f2ebe",
+        "on-secondary": "#ffffff","surface-dim": "#d8dadc","on-secondary-fixed-variant": "#00513b",
+        "surface-bright": "#f7f9fb","on-tertiary-container": "#c9caff","on-secondary-fixed": "#002116",
+        "tertiary-fixed-dim": "#c0c1ff","surface": "#f7f9fb","primary-container": "#0f52ba",
+        "outline-variant": "#c3c6d5","primary": "#003c90","surface-container": "#eceef0",
+        "tertiary-container": "#4243cf","on-error": "#ffffff","primary-fixed-dim": "#b0c6ff",
+        "surface-variant": "#e0e3e5","secondary-container": "#80f9ca","inverse-primary": "#b0c6ff",
+        "surface-container-highest": "#e0e3e5","surface-container-lowest": "#ffffff"
+      },
+      borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+      spacing: { lg: "24px", xs: "8px", xl: "32px", sm: "12px", gutter: "16px", base: "4px", margin: "20px", md: "16px" },
+      fontFamily: { "body-lg": ["Public Sans"],"body-md": ["Public Sans"],"h3": ["Manrope"],"body-sm": ["Public Sans"],"h2": ["Manrope"],"label-caps": ["Public Sans"],"h1": ["Manrope"],"button": ["Public Sans"] },
+      fontSize: {
+        "body-lg": ["18px",{"lineHeight":"28px","fontWeight":"400"}],
+        "body-md": ["16px",{"lineHeight":"24px","fontWeight":"400"}],
+        "h3": ["20px",{"lineHeight":"28px","fontWeight":"600"}],
+        "body-sm": ["14px",{"lineHeight":"20px","fontWeight":"400"}],
+        "h2": ["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],
+        "label-caps": ["12px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"700"}],
+        "h1": ["30px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"700"}],
+        "button": ["16px",{"lineHeight":"20px","fontWeight":"600"}]
+      }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { min-height: max(884px, 100dvh); }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .pick { border: 1px solid #e2e8f0; background: #fff; color: #191c1e; }
+  .pick[aria-pressed="true"] { background: #003c90; border-color: #003c90; color: #fff; }
+  .pick:focus-visible, .cta:focus-visible { outline: 3px solid #b0c6ff; outline-offset: 2px; }
+  .step-dot { height: 6px; border-radius: 9999px; background: #e0e3e5; flex: 1; transition: background .2s; }
+  .step-dot.on { background: #003c90; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body class="bg-background font-body-md text-on-background min-h-screen pb-28" data-page-title-i18n="check.pageTitle">
+
+<header class="fixed top-0 left-0 w-full flex justify-between items-center px-4 h-16 bg-white border-b border-slate-100 shadow-sm z-50">
+  <div class="flex items-center gap-3">
+    <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100" data-i18n-aria="nav.home" aria-label="Home">
+      <span class="material-symbols-outlined text-slate-600" aria-hidden="true">arrow_back</span>
+    </a>
+    <span class="text-lg font-bold tracking-tight text-blue-800" data-i18n="check.title">Symptom check</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <label class="sr-only" for="careHeaderLang" data-i18n="profile.interfaceLanguage">Interface language</label>
+    <select id="careHeaderLang" class="text-xs border border-slate-200 rounded-lg px-1.5 py-1 bg-white text-on-surface w-[4.25rem] shrink-0 cursor-pointer">
+      <option value="en">EN</option>
+      <option value="de">DE</option>
+      <option value="tr">TR</option>
+      <option value="es">ES</option>
+      <option value="fr">FR</option>
+    </select>
+    <a href="sos.html" class="w-10 h-10 flex items-center justify-center rounded-full text-red-600 hover:bg-red-50" data-i18n-aria="check.openSos" aria-label="Open SOS">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1" aria-hidden="true">emergency</span>
+    </a>
+  </div>
+</header>
+
+<main class="pt-20 px-gutter max-w-2xl mx-auto space-y-5">
+
+  <div id="progress" class="space-y-2">
+    <div class="flex gap-2" aria-hidden="true">
+      <span class="step-dot on" data-dot="1"></span><span class="step-dot" data-dot="2"></span><span class="step-dot" data-dot="3"></span>
+    </div>
+    <p id="stepLabel" class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant"></p>
+  </div>
+
+  <!-- Shown the moment a red-flag chip or emergency phrase appears; cannot be dismissed. -->
+  <div id="liveEmergency" role="alert" class="hidden bg-error-container border border-red-200 rounded-2xl p-4">
+    <div class="flex items-start gap-3">
+      <span class="material-symbols-outlined text-error mt-0.5" style="font-variation-settings:'FILL' 1" aria-hidden="true">emergency</span>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-on-error-container" data-i18n="check.liveEmergency">This can be an emergency. Do not finish this form - get help now.</p>
+        <a href="tel:112" class="cta inline-flex items-center gap-2 mt-3 bg-error text-white text-sm font-bold px-5 py-2.5 rounded-full"><span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1" aria-hidden="true">call</span><span data-i18n="emergency.call112">Call 112</span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1 -->
+  <section id="step1" class="space-y-4">
+    <div>
+      <h1 tabindex="-1" class="text-2xl font-bold text-on-surface focus:outline-none" data-i18n="check.step1Title">What's bothering you?</h1>
+      <p class="text-sm text-on-surface-variant mt-1" data-i18n="check.intro"></p>
+    </div>
+    <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm p-5 space-y-4">
+      <p class="text-sm font-medium" id="chipsLabel" data-i18n="check.step1Hint">Pick all that apply.</p>
+      <div id="symptomChips" class="flex flex-wrap gap-2" role="group" aria-labelledby="chipsLabel"></div>
+      <div>
+        <label for="description" class="block text-sm font-medium mb-2" data-i18n="check.describeLabel">Or describe it in your own words</label>
+        <textarea id="description" rows="3" maxlength="2000" data-i18n-placeholder="check.describePlaceholder" class="w-full text-sm rounded-2xl border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/30"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 2 -->
+  <section id="step2" class="hidden space-y-4">
+    <h1 tabindex="-1" class="text-2xl font-bold text-on-surface focus:outline-none" data-i18n="check.step2Title">How bad is it, and for how long?</h1>
+    <div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm p-5 space-y-6">
+      <div>
+        <p class="text-sm font-medium mb-2" id="severityLabel" data-i18n="check.severityLabel">How bad does it feel right now?</p>
+        <div id="severityButtons" class="grid grid-cols-10 gap-1" role="group" aria-labelledby="severityLabel"></div>
+        <div class="flex justify-between text-[11px] text-on-surface-variant mt-1.5">
+          <span data-i18n="check.severityMild">Mild</span><span data-i18n="check.severityModerate">Moderate</span><span data-i18n="check.severitySevere">Severe</span>
+        </div>
+      </div>
+      <div>
+        <p class="text-sm font-medium mb-2" id="durationLabel" data-i18n="check.durationLabel">How long has it been going on?</p>
+        <div id="durationButtons" class="grid grid-cols-2 gap-2" role="group" aria-labelledby="durationLabel"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label for="age" class="block text-sm font-medium mb-2" data-i18n="check.ageLabel">Your age</label>
+          <input id="age" type="number" inputmode="numeric" min="0" max="130" autocomplete="off" class="w-full text-sm rounded-xl border border-slate-200 bg-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+        </div>
+        <div class="sm:col-span-2">
+          <label for="conditions" class="block text-sm font-medium mb-2" data-i18n="check.conditionsLabel">Ongoing conditions (optional)</label>
+          <input id="conditions" type="text" maxlength="200" autocomplete="off" data-i18n-placeholder="check.conditionsPlaceholder" class="w-full text-sm rounded-xl border border-slate-200 bg-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step 3 -->
+  <section id="step3" class="hidden space-y-4"></section>
+
+  <p id="formError" role="alert" class="hidden text-sm font-medium text-error"></p>
+
+  <div id="navButtons" class="flex gap-3">
+    <button type="button" id="backBtn" class="cta hidden flex-1 bg-surface-container text-on-surface font-semibold py-3.5 rounded-full hover:bg-surface-container-high transition-colors" data-i18n="check.back">Back</button>
+    <button type="button" id="nextBtn" class="cta flex-[2] bg-primary text-white font-semibold py-3.5 rounded-full hover:bg-blue-800 transition-colors disabled:opacity-60"></button>
+  </div>
+
+  <p class="text-xs text-on-surface-variant text-center" data-i18n="check.disclaimer"></p>
+</main>
+
+<nav class="fixed bottom-0 left-0 w-full z-40 flex justify-around items-center px-2 pb-safe h-20 bg-white/95 backdrop-blur-md text-[10px] font-medium tracking-wide border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+  <a href="index.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">home_health</span><span data-i18n="nav.home">Home</span>
+  </a>
+  <a href="consult.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">video_chat</span><span data-i18n="nav.consult">Consult</span>
+  </a>
+  <a href="pharmacy.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">prescriptions</span><span data-i18n="nav.pharmacy">Pharmacy</span>
+  </a>
+  <a href="profile.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">person</span><span data-i18n="nav.profile">Profile</span>
+  </a>
+  <a href="sos.html" class="flex flex-col items-center justify-center text-slate-400 px-3 py-1 hover:text-blue-600">
+    <span class="material-symbols-outlined text-2xl mb-1">emergency_share</span><span data-i18n="nav.sos">SOS</span>
+  </a>
+</nav>
+
+<script src="js/i18n/translations.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/languageContext.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api.js"></script>
+<script src="js/records.js"></script>
+<script src="js/doctors.js"></script>
+<script src="js/navigator.js"></script>
+<script>
+// Order shown to the user; slugs are the keys of "symptoms" in data/care_rules.json.
+var SYMPTOM_ORDER = [
+  'fever', 'cough', 'sore_throat', 'headache', 'nausea', 'stomach_pain', 'fatigue', 'dizziness',
+  'back_pain', 'joint_pain', 'ear_pain', 'rash', 'itching', 'palpitations',
+  'anxiety', 'low_mood', 'insomnia', 'shortness_of_breath', 'chest_pain',
+];
+var DURATIONS = ['today', 'days_1_3', 'days_4_7', 'over_week'];
+// Used for the live banner until the rules file has loaded (then replaced by its red_flag entries).
+var redFlagSlugs = ['shortness_of_breath', 'chest_pain'];
+var CHECK_HANDOFF_KEY = 'careconnect_check_handoff';
+
+var state = { step: 1, symptoms: [], severity: null, duration: null, lastInput: null, lastResult: null, saved: null };
+
+var URGENCY_STYLE = {
+  emergency: { card: 'bg-error-container border-red-200', title: 'text-on-error-container', icon: 'emergency', iconColor: 'text-error' },
+  urgent: { card: 'bg-amber-50 border-amber-200', title: 'text-amber-900', icon: 'schedule', iconColor: 'text-amber-600' },
+  routine: { card: 'bg-blue-50 border-blue-200', title: 'text-primary', icon: 'event_available', iconColor: 'text-primary' },
+  self_care: { card: 'bg-emerald-50 border-emerald-200', title: 'text-on-secondary-container', icon: 'home_health', iconColor: 'text-secondary' },
+};
+
+function t(key, vars, locale) { return CareI18n.t(key, vars, locale); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function $(id) { return document.getElementById(id); }
+
+// ---- Inputs ---------------------------------------------------------------------
+
+function renderChips() {
+  $('symptomChips').innerHTML = SYMPTOM_ORDER.map(function (slug) {
+    var on = state.symptoms.indexOf(slug) !== -1;
+    return '<button type="button" class="pick text-sm font-medium px-4 py-2 rounded-full" data-slug="' + esc(slug) +
+      '" aria-pressed="' + on + '">' + esc(t('check.symptoms.' + slug)) + '</button>';
+  }).join('');
+}
+
+function renderSeverity() {
+  var html = '';
+  for (var n = 1; n <= 10; n++)
+    html += '<button type="button" class="pick text-sm font-semibold py-2.5 rounded-lg" data-severity="' + n +
+      '" aria-pressed="' + (state.severity === n) + '">' + n + '</button>';
+  $('severityButtons').innerHTML = html;
+}
+
+function renderDurations() {
+  $('durationButtons').innerHTML = DURATIONS.map(function (d) {
+    return '<button type="button" class="pick text-sm font-medium px-3 py-2.5 rounded-xl" data-duration="' + d +
+      '" aria-pressed="' + (state.duration === d) + '">' + esc(t('check.durations.' + d)) + '</button>';
+  }).join('');
+}
+
+function looksLikeEmergency() {
+  var flagged = state.symptoms.some(function (s) { return redFlagSlugs.indexOf(s) !== -1; });
+  return flagged || checkEmergencySymptoms($('description').value).isEmergency;
+}
+
+function updateLiveEmergency() {
+  $('liveEmergency').classList.toggle('hidden', !(state.step < 3 && looksLikeEmergency()));
+}
+
+function showError(key) {
+  var el = $('formError');
+  el.textContent = key ? t(key) : '';
+  el.classList.toggle('hidden', !key);
+}
+
+function readInput() {
+  return {
+    symptoms: state.symptoms.slice(),
+    description: $('description').value.trim(),
+    severity: state.severity,
+    duration: state.duration,
+    age: parseInt($('age').value, 10),
+    known_conditions: $('conditions').value.split(',').map(function (c) { return c.trim(); }).filter(Boolean),
+  };
+}
+
+// ---- Steps ----------------------------------------------------------------------
+
+function showStep(step, moveFocus) {
+  state.step = step;
+  [1, 2, 3].forEach(function (n) { $('step' + n).classList.toggle('hidden', n !== step); });
+  document.querySelectorAll('.step-dot').forEach(function (dot) {
+    dot.classList.toggle('on', Number(dot.dataset.dot) <= step);
+  });
+  $('stepLabel').textContent = t('check.stepOf', { step: step });
+  $('backBtn').classList.toggle('hidden', step !== 2);
+  $('nextBtn').classList.toggle('hidden', step === 3);
+  $('nextBtn').textContent = t(step === 1 ? 'check.next' : 'check.seeResult');
+  showError(null);
+  updateLiveEmergency();
+  if (moveFocus) {
+    window.scrollTo(0, 0);
+    var heading = $('step' + step).querySelector('h1');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+}
+
+async function onNext() {
+  if (state.step === 1) {
+    if (!state.symptoms.length && !$('description').value.trim()) return showError('check.needSymptom');
+    return showStep(2, true);
+  }
+  if (state.severity == null) return showError('check.needSeverity');
+  if (!state.duration) return showError('check.needDuration');
+  var input = readInput();
+  if (!(input.age >= 0 && input.age <= 130)) return showError('check.needAge');
+
+  var btn = $('nextBtn');
+  btn.disabled = true;
+  btn.textContent = t('check.loading');
+  var result;
+  try {
+    result = await CareNavigator.navigate(input, {
+      language: CarePrefs.getLanguage(),
+      preferred_consult_language: CarePrefs.getPreferredConsultLanguage(),
+      location: CarePrefs.getLocation(),
+    });
+  } catch (err) {
+    console.warn('[check] navigation failed', err && err.message);
+    result = CareNavigator.evaluateWithoutRules(input, checkEmergencySymptoms);
+    result.match_language = '';
+    result.matches = [];
+    result.source = 'local';
+  } finally {
+    btn.disabled = false;
+  }
+
+  state.lastInput = input;
+  state.lastResult = result;
+  state.saved = null;
+  renderResult();
+  showStep(3, true);
+}
+
+// ---- Result ---------------------------------------------------------------------
+
+function specialtyLabel(slug) {
+  var key = 'consult.specialties.' + slug;
+  var label = t(key);
+  return label === key ? slug : label;
+}
+
+function matchCardHTML(match, matchLanguage) {
+  var doc = match.doctor;
+  var badges = match.reasons.map(function (reason) {
+    var highlight = reason === 'language';
+    return '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ' +
+      (highlight ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container text-on-surface-variant') + '">' +
+      esc(t('check.badges.' + reason, { language: CareI18n.spokenLanguageLabel(matchLanguage) })) + '</span>';
+  }).join('');
+  var place = [doc.city, doc.country].filter(Boolean).join(', ');
+  return '<div class="bg-surface-container-lowest rounded-2xl border border-slate-100 p-4 flex items-start gap-4 shadow-sm">' +
+    doctorAvatarHTML(doc) +
+    '<div class="flex-1 min-w-0">' +
+      '<p class="font-semibold text-sm">' + esc(doc.name) + '</p>' +
+      '<p class="text-xs text-on-surface-variant">' + esc(doc.specialty + (place ? ' · ' + place : '')) + '</p>' +
+      '<div class="flex flex-wrap gap-1.5 mt-2">' + badges + '</div>' +
+    '</div>' +
+    '<button type="button" class="cta bg-primary text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-blue-800 transition-colors" data-book="' + esc(doc.id) + '">' +
+      esc(t('consult.book')) + '</button>' +
+  '</div>';
+}
+
+function listHTML(titleKey, items) {
+  if (!items.length) return '';
+  return '<div class="bg-surface-container-lowest rounded-3xl border border-slate-100 shadow-sm p-5">' +
+    '<h2 class="font-semibold text-on-surface mb-3">' + esc(t(titleKey)) + '</h2>' +
+    '<ul class="space-y-2">' + items.map(function (text) {
+      return '<li class="flex gap-2 text-sm text-on-surface"><span class="material-symbols-outlined text-base text-on-surface-variant mt-0.5" aria-hidden="true">check_small</span><span>' + esc(text) + '</span></li>';
+    }).join('') + '</ul></div>';
+}
+
+function renderResult() {
+  var r = state.lastResult;
+  if (!r) return;
+  var style = URGENCY_STYLE[r.urgency] || URGENCY_STYLE.routine;
+  var emergency = r.urgency === 'emergency';
+  var html = '';
+
+  html += '<div class="rounded-3xl border p-5 ' + style.card + '">' +
+    '<div class="flex items-start gap-3">' +
+      '<span class="material-symbols-outlined text-3xl ' + style.iconColor + '" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">' + style.icon + '</span>' +
+      '<div class="flex-1">' +
+        '<h1 tabindex="-1" class="text-xl font-bold focus:outline-none ' + style.title + '">' + esc(t('check.urgency.' + r.urgency + '.title')) + '</h1>' +
+        '<p class="text-sm text-on-surface mt-1">' + esc(t('check.urgency.' + r.urgency + '.body')) + '</p>' +
+        (emergency
+          ? '<a href="tel:112" class="cta inline-flex items-center gap-2 mt-4 bg-error text-white font-bold px-6 py-3 rounded-full"><span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1" aria-hidden="true">call</span>' + esc(t('emergency.call112')) + '</a>' +
+            '<a href="sos.html" class="block mt-3 text-sm underline text-on-error-container">' + esc(t('check.openSos')) + '</a>'
+          : '<p class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant mt-3">' + esc(t('check.recommended', { specialty: specialtyLabel(r.specialty_slug) })) + '</p>') +
+      '</div>' +
+    '</div></div>';
+
+  html += listHTML('check.whyTitle', r.reasons.map(function (code) { return t('check.reasons.' + code); }));
+
+  if (!emergency) {
+    var cards = r.matches.map(function (m) { return matchCardHTML(m, r.match_language); }).join('');
+    var anyLanguageMatch = r.matches.some(function (m) { return m.reasons.indexOf('language') !== -1; });
+    var note = r.match_language && r.matches.length && !anyLanguageMatch
+      ? '<p class="text-xs text-on-surface-variant mb-3">' + esc(t('check.noLanguageMatch', { language: CareI18n.spokenLanguageLabel(r.match_language) })) + '</p>'
+      : '';
+    html += '<div>' +
+      '<div class="flex justify-between items-center mb-3">' +
+        '<h2 class="font-semibold text-on-surface">' + esc(t('check.matchesTitle')) + '</h2>' +
+        '<button type="button" class="text-sm text-primary font-medium" data-book="">' + esc(t('check.seeAllDoctors')) + '</button>' +
+      '</div>' + note +
+      (cards ? '<div class="space-y-3">' + cards + '</div>' : '<p class="text-sm text-on-surface-variant">' + esc(t('check.noMatches')) + '</p>') +
+    '</div>';
+
+    if (r.specialty_slug === 'mental_health')
+      html += '<p class="text-sm bg-surface-container rounded-2xl px-4 py-3">' + esc(t('check.crisisLine')) +
+        ' <a href="tel:112" class="font-semibold underline">112</a> · <a href="tel:116123" class="font-semibold underline">116 123</a></p>';
+
+    html += listHTML('check.tipsTitle', r.self_care.map(function (code) { return t('check.tips.' + code); }));
+    if (r.self_care.length)
+      html += '<p class="text-xs text-on-surface-variant">' + esc(t('check.tipsCaveat')) + '</p>';
+  }
+
+  if (r.source === 'local')
+    html += '<p class="text-xs text-on-surface-variant">' + esc(t('check.offlineNote')) + '</p>';
+
+  var saveLabel = state.saved === true ? 'check.saved' : state.saved === false ? 'check.saveFailed' : 'check.saveRecord';
+  html += '<div class="flex gap-3">' +
+    '<button type="button" id="restartBtn" class="cta flex-1 bg-surface-container text-on-surface font-semibold py-3.5 rounded-full hover:bg-surface-container-high transition-colors">' + esc(t('check.startOver')) + '</button>' +
+    (emergency ? '' : '<button type="button" id="saveBtn" class="cta flex-1 border border-primary text-primary font-semibold py-3.5 rounded-full hover:bg-blue-50 transition-colors disabled:opacity-60"' + (state.saved === true ? ' disabled' : '') + '>' + esc(t(saveLabel)) + '</button>') +
+  '</div>';
+
+  $('step3').innerHTML = html;
+}
+
+function bookingReason() {
+  var input = state.lastInput;
+  var what = input.symptoms.length
+    ? input.symptoms.map(function (s) { return t('check.symptoms.' + s); }).join(', ')
+    : input.description.slice(0, 80);
+  return t('check.bookingReason', { symptoms: what, severity: input.severity, duration: t('check.durations.' + input.duration) });
+}
+
+// Hands the result to consult.html. sessionStorage, not localStorage: it describes
+// symptoms and should not outlive the tab. consult.html removes it on read.
+function goToConsult(specialistId) {
+  var r = state.lastResult;
+  try {
+    sessionStorage.setItem(CHECK_HANDOFF_KEY, JSON.stringify({
+      specialistId: specialistId === '' ? null : specialistId,
+      specialty: r.specialty_slug,
+      language: r.match_language || '',
+      reason: bookingReason(),
+    }));
+  } catch (e) { /* private mode: consult.html still opens, just unfiltered */ }
+  window.location.href = 'consult.html';
+}
+
+async function onSave() {
+  $('saveBtn').disabled = true;
+  var input = state.lastInput;
+  var labels = {};
+  input.symptoms.forEach(function (s) { labels[s] = t('check.symptoms.' + s, null, 'en'); });
+  state.saved = await saveSymptomCheck({
+    symptoms: input.symptoms,
+    description: input.description,
+    severity: input.severity,
+    labels: labels,
+  });
+  renderResult();
+}
+
+function restart() {
+  state = { step: 1, symptoms: [], severity: null, duration: null, lastInput: null, lastResult: null, saved: null };
+  $('description').value = '';
+  $('age').value = '';
+  $('conditions').value = '';
+  $('step3').innerHTML = '';
+  redrawDynamic();
+  showStep(1, true);
+}
+
+function redrawDynamic() {
+  renderChips();
+  renderSeverity();
+  renderDurations();
+  renderResult();
+  showStep(state.step, false);
+}
+
+// ---- Wiring ---------------------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', async function () {
+  var session = await requireAuth();
+  if (!session) return;
+
+  redrawDynamic();
+  window.addEventListener('careconnect:redraw-dynamic', redrawDynamic);
+  window.addEventListener('careconnect:locale', redrawDynamic);
+
+  $('symptomChips').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-slug]');
+    if (!btn) return;
+    var slug = btn.dataset.slug, at = state.symptoms.indexOf(slug);
+    if (at === -1) state.symptoms.push(slug); else state.symptoms.splice(at, 1);
+    btn.setAttribute('aria-pressed', String(at === -1));
+    showError(null);
+    updateLiveEmergency();
+  });
+  $('severityButtons').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-severity]');
+    if (!btn) return;
+    state.severity = Number(btn.dataset.severity);
+    renderSeverity();
+    showError(null);
+  });
+  $('durationButtons').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-duration]');
+    if (!btn) return;
+    state.duration = btn.dataset.duration;
+    renderDurations();
+    showError(null);
+  });
+  $('description').addEventListener('input', updateLiveEmergency);
+  $('nextBtn').addEventListener('click', onNext);
+  $('backBtn').addEventListener('click', function () { showStep(1, true); });
+  $('step3').addEventListener('click', function (e) {
+    var book = e.target.closest('[data-book]');
+    if (book) return goToConsult(book.dataset.book);
+    if (e.target.closest('#restartBtn')) return restart();
+    if (e.target.closest('#saveBtn')) return onSave();
+  });
+
+  // Pre-fill age and ongoing conditions from the profile; the person can still change them.
+  CareRecords.getProfile().then(function (result) {
+    if (!result.ok) return;
+    var age = CareRecords.ageFromDob(result.data.medical && result.data.medical.date_of_birth);
+    if (age != null && !$('age').value) $('age').value = age;
+    if (result.data.conditions.length && !$('conditions').value)
+      $('conditions').value = result.data.conditions.map(function (c) { return c.label; }).join(', ');
+  });
+
+  CareNavigator.loadRules().then(function (rules) {
+    if (!rules) return;
+    redFlagSlugs = Object.keys(rules.symptoms).filter(function (s) { return rules.symptoms[s].red_flag; });
+    updateLiveEmergency();
+  });
+});
+</script>
+</body>
+</html>
