@@ -8,7 +8,7 @@ A telehealth prototype (branded **CareConnect** in the UI): check your symptoms,
 public/      The product UI: static HTML pages, plain JS (js/), triage rules (data/)
 backend/     FastAPI API (routes/ -> services/ -> database/, models/), tests, requirements
 supabase/    SQL migrations for the real schema (RLS on every table)
-app/, lib/   Next.js app: serves public/, plus a Supabase status page and /auth/callback
+app/, lib/   Next.js app: serves public/ (routes in next.config.ts), plus /auth/callback
 tests/       Browser-logic tests and the triage cases shared with the backend tests
 ```
 

@@ -8,7 +8,7 @@ DoctoTUM (branded "CareConnect" in the UI and in many identifiers) is a teleheal
 
 1. **Static HTML app** (`public/`: `index.html`, `check.html`, `consult.html`, `pharmacy.html`, `profile.html`, `sos.html`, `plans.html`, plus `login/signup/verify/reset-password.html`) — this is the real product UI.
 2. **FastAPI backend** (`backend/`) — verifies Supabase tokens and reads/writes Supabase as the signed-in user; in-memory store for tests; optional OpenAI.
-3. **Next.js 15 app** (`app/`, `lib/`, `middleware.ts`) — serves `public/` as static files, plus a Supabase connectivity status page at `/` and the `/auth/callback` code-exchange route. The product home is `/index.html` (or `/home` via `vercel.json`), not `/`.
+3. **Next.js 15 app** (`app/`, `lib/`, `middleware.ts`) — serves `public/` as static files, plus the `/auth/callback` code-exchange route. `next.config.ts` rewrites `/` and `/home` to `/index.html` (and `/consult`, `/check`, … to their pages) and sets the security headers.
 
 ## Commands
 
@@ -19,10 +19,11 @@ npm run lint           # next lint (next/core-web-vitals)
 
 pip install -r backend/requirements.txt   # or backend/requirements-dev.txt to run tests
 npm run backend:dev    # uvicorn backend.main:app --reload --port 8000  (run from repo root; imports are `backend.*`)
+npx cap sync ios       # copy public/ into the iOS project (after any change to public/)
 ```
 
 - The static pages are served by `npm run dev`, or by any static file server rooted at `public/` (e.g. `python -m http.server 8080 --directory public`). Backend CORS allows localhost/127.0.0.1 on ports 3000, 5173, 5500, 8080; add others via `CORS_ALLOW_ORIGINS` (comma-separated).
-- Tests: `npm test` (Node: `tests/navigator.test.mjs`, `tests/i18n.test.mjs`) and `npm run backend:test` (pytest, `backend/tests/`). Both run the shared cases in `tests/care_rules.cases.json`. No Python linter config.
+- Tests: `npm test` (Node: `tests/navigator.test.mjs`, `tests/i18n.test.mjs`, `tests/app_config.test.mjs` for config resolution, script order, no remote scripts and the Capacitor/Codemagic config) and `npm run backend:test` (pytest, `backend/tests/`). Both run the shared cases in `tests/care_rules.cases.json`. No Python linter config.
 - FastAPI docs: `http://localhost:8000/docs`. `GET /api/integrations/status` reports the data store, auth mode and AI mode.
 - Env: copy `.env.example` to `.env.local`. The backend loads `.env` then `.env.local` (override) from the cwd, so both Next and FastAPI share that file.
 
@@ -37,9 +38,9 @@ npm run backend:dev    # uvicorn backend.main:app --reload --port 8000  (run fro
 
 ### Static frontend (`public/`; no bundler, everything is a global)
 
-Paths in this section are relative to `public/`. Each page: Tailwind via CDN with an **inline `tailwind.config` copied into every page's `<head>`**, Supabase JS v2 via CDN, then plain `<script>` tags. **Script order matters**:
+Paths in this section are relative to `public/`. Each page: Tailwind Play from `vendor/` (compiles in the browser; logs a "not for production" warning, expected) with an **inline `tailwind.config` copied into every page's `<head>`**, Supabase JS v2 from `vendor/`, then plain `<script>` tags. No page loads scripts from a CDN (Google Fonts is still remote). **Script order matters**:
 
-1. Supabase CDN → `js/auth.js` (in `<head>`): `getSupabase`, `getSession`, `getUser`, `requireAuth`, `signIn`, `signOut`, `getAccessToken`, … Holds the project URL and anon key (public by design).
+1. `vendor/supabase-js.umd.js` → `js/config.js` → `js/auth.js` (in `<head>`; `config.js` must come immediately before `auth.js`): `config.js` sets `window.CARE_CONFIG` (`apiBase`, `webOrigin`, `isNativeApp`); `auth.js` has `getSupabase`, `getSession`, `getUser`, `requireAuth`, `signIn`, `signOut`, `getAccessToken`, … Holds the project URL and anon key (public by design).
 2. `js/i18n/translations.js` → `js/i18n/i18n.js` (`CarePrefs`, `CareI18n`, auto-bootstrap) → `js/i18n/languageContext.js`
 3. `js/ui.js`: `escapeHtml`, `careT(key, vars, fallback)`, `showToast`, `stateBlockHTML`, `apiErrorText`, date formatting
 4. `js/api.js`: `apiCall(path)` → `{ ok, status, data, error }` (status 0 = backend unreachable; 401 signs the user out), `apiFetch` (data or null), endpoint wrappers
@@ -80,6 +81,10 @@ Plain SQL, applied in filename order with `psql "$DATABASE_URL" -f …` (or the 
 
 ### Deployment
 
-`vercel.json` adds clean URLs for the pages in `public/` and security headers. The backend is not deployed by this config, and `public/js/api.js` defaults to `http://localhost:8000` (`window.CARE_API_BASE` overrides). Nothing has been deployed.
+`public/js/config.js` decides the API base and the origin used in email links: on `localhost` the API is `http://localhost:8000`; on the hosted web and inside the iOS app (`capacitor:`) it is `https://careconnect-api.onrender.com`, and in the app email links (signup verify, password reset) use `https://careconnect-web.onrender.com`. `window.CARE_API_BASE` / `window.CARE_WEB_ORIGIN` override.
+
+- Vercel: the repo is connected to Vercel (`vercel.json` only sets `npm run build`; routes and headers live in `next.config.ts`). The hosted web build uses the Render API (`config.js`), so its origin must be added to `CORS_ALLOW_ORIGINS` on Render and to the Supabase redirect URLs if it is used.
+- `render.yaml` defines the Render Blueprint: API `careconnect-api` (secrets are `sync: false`, entered in the Render dashboard; CORS allows `capacitor://localhost` and the web origin) and static site `careconnect-web` (publishes `public/`). Never set `CARECONNECT_ALLOW_DEMO_USER` there. Whether it is deployed is not recorded in the repo.
+- iOS: Capacitor shell in `ios/` (`capacitor.config.json`, webDir `public`). After changing `public/`, run `npx cap sync ios`. There is no Mac: `codemagic.yaml` (manual workflow `ios-testflight`) builds and uploads to TestFlight; one-time setup is in its header comment. This is a **TestFlight pilot only**: an App Store release needs an organization account, a privacy policy and no simulated billing or pharmacy features.
 
 See `docs/HANDOVER.md` for what is real, what is simulated and what was not verified.

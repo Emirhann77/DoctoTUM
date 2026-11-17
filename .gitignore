@@ -151,6 +151,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+.vercel
 
 .pytest_cache/
 

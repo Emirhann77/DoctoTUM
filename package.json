@@ -9,11 +9,13 @@
     "build": "node scripts/sync-public.mjs && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --test tests/navigator.test.mjs tests/i18n.test.mjs",
+    "test": "node --test tests/navigator.test.mjs tests/i18n.test.mjs tests/app_config.test.mjs",
     "backend:test": "python -m pytest backend/tests -q",
     "backend:dev": "python -m uvicorn backend.main:app --reload --port 8000"
   },
   "dependencies": {
+    "@capacitor/core": "8.6.2",
+    "@capacitor/ios": "8.6.2",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.8",
     "next": "^15.3.2",
@@ -21,6 +23,7 @@
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.6.2",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
