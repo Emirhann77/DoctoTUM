@@ -57,7 +57,7 @@ Left as they are, by choice: some duplicated helpers across page scripts (loadin
 - **AI assistant.** Not verified live: the OpenAI key in `.env.local` returned "no credits remaining" on the first call. The app falls back to built-in replies and now says so in the chat. Add credits and it switches over with no code change.
 - **Sign-up by email.** Not exercised: it sends a real confirmation email, and Supabase's built-in mailer allows only a few per hour. The form is unchanged from before; the database trigger that creates the profile on sign-up is verified (it ran for the test account).
 - **The expired-login case on SOS** is fixed in code and covered by reading, not reproduced in a browser (it needs a token to expire mid-session).
-- **Deployment.** Nothing was deployed. `http://localhost:8000` is still the API address the pages use by default.
+- **Deployment.** Nothing was deployed or built from this repo as far as it records. Locally the pages use `http://localhost:8000`; see "iOS app (TestFlight pilot)" for the hosted setup.
 
 ## Decisions made without you
 
@@ -78,6 +78,48 @@ Left as they are, by choice: some duplicated helpers across page scripts (loadin
 - **Language-first matching.** A doctor who speaks the patient's language can outrank the exact specialist.
 - **Rotate the database password** if this machine is shared: `DATABASE_URL` in `.env.local` contains it. Nothing secret was committed (checked).
 - **`/` still shows the Supabase status page**; the product is at `/index.html`.
+
+## iOS app (TestFlight pilot)
+
+This is a TestFlight pilot only. An App Store release needs an organization developer account, a privacy policy, and no simulated billing or pharmacy features.
+
+### What is set up (in the repo, not yet run)
+
+- `public/js/config.js` picks the API base and the email-link origin. In the app (`capacitor:`) and on the hosted web the API is `https://careconnect-api.onrender.com`; email links use `https://careconnect-web.onrender.com`. Locally it is `http://localhost:8000`. Every page loads it right before `js/auth.js`.
+- `public/vendor/` holds supabase-js and Tailwind Play; no page loads scripts from a CDN. Tailwind compiles in the browser and logs a "not for production" warning.
+- `render.yaml`: Blueprint for the API and the static site (`public/`).
+- Capacitor shell in `ios/` (appId `io.doctotum.careconnect`). After changing `public/`, run `npx cap sync ios`.
+- `codemagic.yaml`: manual workflow `ios-testflight`, build number = latest TestFlight build + 1, uploads to TestFlight. `APP_STORE_APP_ID` is the placeholder `0000000000`, so the build fails until you replace it.
+- Tests: `tests/app_config.test.mjs`, `backend/tests/test_cors.py`.
+
+Nothing here has been deployed, built in CI or installed on a device.
+
+### Your one-time setup
+
+1. Render: create the Blueprint from `render.yaml`; enter `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`, `OPENAI_API_KEY` in the dashboard. Do not set `CARECONNECT_ALLOW_DEMO_USER`.
+2. Supabase Auth: add the hosted `verify.html` and `reset-password.html` URLs (on `careconnect-web.onrender.com`) to the redirect URLs.
+3. Apple Developer: individual account.
+4. App Store Connect: create the app record (bundle id `io.doctotum.careconnect`) and an API key.
+5. Codemagic: add the API key as integration `careconnect_asc`; replace `APP_STORE_APP_ID` in `codemagic.yaml` with the app's Apple ID; start `ios-testflight` manually.
+
+### Device check (pending first TestFlight build)
+
+Add yourself as an internal tester (no Beta App Review), install, then record pass or fail:
+
+- [ ] Test account signs in
+- [ ] Kill the app and reopen: still signed in
+- [ ] Headers are clear of the notch
+- [ ] Doctor list is the real list (bookable), not the fallback
+- [ ] Book an appointment, then cancel it
+- [ ] SOS: the alert is recorded, and `tel:112` opens the call sheet
+- [ ] Symptom check: an emergency phrase shows the 112 path, and the `tel:` links work
+- [ ] Pharmacy and plans show their simulated labels
+- [ ] Language switch works
+- [ ] Sign up with a new email: the link opens `careconnect-web.onrender.com/verify.html`
+- [ ] Password reset: the link opens the web reset page, and signing in to the app with the new password works
+- [ ] Airplane mode: pages show their error states and don't hang
+
+Rule: if a `tel:` link does not open the call sheet, file it as its own fix task and invite no testers until it is fixed. Do not ship a build where the SOS call button does nothing.
 
 ## Where things are
 
