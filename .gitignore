@@ -159,7 +159,3 @@ vite.config.ts.timestamp-*
 public/__e2e*
 
 .vercel
-
-# Copied into public/ by scripts/sync-public.mjs (sources: *.html and js/ at repo root)
-public/*.html
-public/js/

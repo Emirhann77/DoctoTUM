@@ -3,10 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/sync-public.mjs",
     "dev": "next dev",
-    "dev:sync": "node scripts/sync-public.mjs",
-    "build": "node scripts/sync-public.mjs && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "test": "node --test tests/navigator.test.mjs tests/i18n.test.mjs tests/app_config.test.mjs",
