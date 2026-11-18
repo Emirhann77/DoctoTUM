@@ -156,7 +156,7 @@ test('without CARE_CONFIG the signup link falls back to location.origin', async 
   assert.equal(calls.signUp.options.emailRedirectTo, 'http://localhost:3000/verify.html');
 });
 
-test('a request that never answers times out after 15 s and reads as unreachable', async () => {
+test('a request that never answers times out after 60 s and reads as unreachable', async () => {
   mock.timers.enable({ apis: ['setTimeout'] });
   try {
     let aborted = false;
@@ -169,7 +169,7 @@ test('a request that never answers times out after 15 s and reads as unreachable
     const { sandbox } = loadApp({ careConfig: { apiBase: 'https://api.test', webOrigin: 'https://web.test' }, fetchImpl });
     const pending = sandbox.apiCall('/api/specialists');
     await new Promise((r) => setImmediate(r));
-    mock.timers.tick(14999);
+    mock.timers.tick(59999);
     assert.equal(aborted, false);
     mock.timers.tick(1);
     const out = await pending;

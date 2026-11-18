@@ -6,7 +6,8 @@
 // token). No request carries a user id: the backend derives it from the token.
 const API_BASE = (typeof window !== 'undefined' && ((window.CARE_CONFIG && window.CARE_CONFIG.apiBase) || window.CARE_API_BASE)) || 'http://localhost:8000';
 
-const API_TIMEOUT_MS = 15000;
+// 60 s: the API runs on Render's free plan, which sleeps after 15 min idle and takes up to a minute to wake.
+const API_TIMEOUT_MS = 60000;
 
 // Every call resolves to { ok, status, data, error }:
 //   status 0   -> the backend could not be reached (pages may fall back or say so)

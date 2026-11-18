@@ -87,7 +87,7 @@ This is a TestFlight pilot only, on an individual Apple developer account. An Ap
 
 - `public/js/config.js` picks the API base and the email-link origin. In the app (`capacitor:`) and on the hosted web the API is `https://careconnect-api.onrender.com`; email links use `https://careconnect-web.onrender.com`. Locally it is `http://localhost:8000`. Every page loads it right before `js/auth.js`.
 - `public/vendor/` holds supabase-js and Tailwind Play; no page loads scripts from a CDN. Tailwind compiles in the browser and logs a "not for production" warning.
-- `render.yaml`: Blueprint for the API and the static site (`public/`). `plan: starter` on the API is a paid Render plan, chosen so the API doesn't sleep; the free plan sleeps after 15 minutes idle and takes about a minute to wake.
+- `render.yaml`: Blueprint for the API and the static site (`public/`), both on Render's free plan. The free API sleeps after 15 minutes idle and takes up to a minute to wake, so the first request after a quiet spell is slow (the app waits up to 60 s, `API_TIMEOUT_MS` in `public/js/api.js`). Its in-memory caches and rate limits reset on every wake. For steady response times switch the API to `plan: starter` (paid).
 - Capacitor shell in `ios/` (appId `io.doctotum.careconnect`). After changing `public/`, run `npx cap sync ios`.
 - `codemagic.yaml`: manual workflow `ios-testflight`, build number = latest TestFlight build + 1, uploads to TestFlight. `APP_STORE_APP_ID` is the placeholder `0000000000`, so the build fails until you replace it.
 - The app icon and splash screen are Capacitor's defaults; replace them before inviting external testers (for example with `@capacitor/assets`). `xcode: latest` in `codemagic.yaml` should be pinned once the first build is green.
